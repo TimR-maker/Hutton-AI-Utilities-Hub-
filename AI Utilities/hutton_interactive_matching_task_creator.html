@@ -339,5 +339,9 @@ function loadExample(){document.getElementById('aiResponse').value=JSON.stringif
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHuttonRefinement);else initHuttonRefinement();
 })();
 </script>
+
+<script id="hutton-auto-create-after-paste">
+(function(){function init(){const response=document.getElementById('aiResponse');if(!response||typeof buildBoard!=='function'||typeof extractJSON!=='function')return;let timer=null;response.addEventListener('paste',function(){clearTimeout(timer);timer=setTimeout(function(){const text=response.value.trim();if(!text)return;try{extractJSON(text)}catch(e){return}buildBoard()},500)})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();
+</script>
 </body>
 </html>

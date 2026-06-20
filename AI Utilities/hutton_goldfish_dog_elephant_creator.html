@@ -29,7 +29,7 @@ button,a.btn{display:inline-flex;align-items:center;justify-content:center;gap:8
 .primary{background:var(--navy);color:#fff}.primary:hover,.btn:hover{background:var(--navy2);color:#fff}.secondary,.btn{background:#e6eef8;color:var(--navy);border:1px solid #cbd9eb}.danger{background:#f8eeee;color:#7a1d1d;border:1px solid #e3c4c4}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}#prompt{min-height:410px;font-family:Consolas,Monaco,monospace;font-size:.88rem;white-space:pre-wrap}.hidden{display:none!important}
 .step{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;margin-right:8px}.status{margin-top:10px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.pill{background:#f1f5fb;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:700;color:#34445d}
-.previewPanel{border:1px solid var(--line);border-radius:12px;background:#f8fbff;padding:16px;line-height:1.45}.previewGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.previewItem{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}.previewItem strong{color:var(--navy)}
+.previewPanel{border:1px solid var(--line);border-radius:12px;background:#f8fbff;padding:16px;line-height:1.45}.previewGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.previewItem{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}.previewAnimal{height:104px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}.previewAnimal img{display:block;max-width:100%;max-height:100%;object-fit:contain}
 footer{font-size:.8rem;color:var(--muted);text-align:center;margin-top:16px}.brand-icon{width:18px;height:18px;object-fit:contain;display:inline-block;flex:0 0 18px}
 .hutton-floating-nav{position:fixed;right:16px;bottom:16px;z-index:99999;display:flex;flex-direction:column;gap:8px}.hutton-floating-nav a,.hutton-floating-nav button{display:inline-flex;align-items:center;justify-content:center;min-width:132px;padding:10px 13px;border-radius:999px;border:1px solid #cbd9eb;text-decoration:none;font-weight:700;background:#0b2348;color:#fff;cursor:pointer}.hutton-floating-nav button{background:#e6eef8;color:#0b2348}
 @media(max-width:760px){header{padding:24px 92px 20px 18px}.school-badge{right:18px;top:18px;width:64px}.grid,.previewGrid{grid-template-columns:1fr}.card{padding:16px}}@media print{.hutton-floating-nav{display:none!important}}
@@ -91,6 +91,21 @@ footer{font-size:.8rem;color:var(--muted);text-align:center;margin-top:16px}.bra
 <script src="hutton_board_enhancer.js"></script>
 <script>
 let currentData=null,boardHTML='';
+let GDE_ANIMAL_IMAGES=null;
+async function loadGDEAnimalImages(){
+ if(GDE_ANIMAL_IMAGES)return GDE_ANIMAL_IMAGES;
+ if(typeof JSZip==='undefined'||!window.HUTTON_GDE_TEMPLATE_BASE64)throw new Error('The Goldfish Dog Elephant template assets could not be loaded.');
+ const zip=await JSZip.loadAsync(window.HUTTON_GDE_TEMPLATE_BASE64,{base64:true});
+ const files={goldfish:'ppt/media/image1.png',dog:'ppt/media/image3.png',elephant:'ppt/media/image2.png'};
+ const images={};
+ for(const key of Object.keys(files)){
+  const entry=zip.file(files[key]);
+  if(!entry)throw new Error('The '+key+' image was not found in the PowerPoint template.');
+  images[key]='data:image/png;base64,'+await entry.async('base64');
+ }
+ GDE_ANIMAL_IMAGES=images;
+ return images;
+}
 function val(id){return document.getElementById(id)?.value.trim()||''}
 function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function setStatus(msg,type){const el=document.getElementById('status'); if(!msg){el.innerHTML='';return} el.innerHTML='<p class="warning '+(type==='bad'?'bad':'ok')+'">'+escapeHTML(msg)+'</p>'}
@@ -161,17 +176,23 @@ function normaliseItem(item,name){
 }
 function normaliseResponse(obj){const root=obj.goldfishDogElephant||obj.goldfish_dog_elephant||obj; return {goldfish:normaliseItem(root.goldfish,'Goldfish'),dog:normaliseItem(root.dog,'Dog'),elephant:normaliseItem(root.elephant,'Elephant')}}
 function renderPreview(){
- const labels=[['Goldfish',currentData.goldfish],['Dog',currentData.dog],['Elephant',currentData.elephant]];
- document.getElementById('previewGrid').innerHTML=labels.map(([name,item])=>'<div class="previewItem"><strong>'+name+'</strong><p>'+escapeHTML(item.question)+'</p><p class="hint">'+escapeHTML(item.explanation)+'</p><p class="hint">'+escapeHTML(item.discussionPoint)+'</p></div>').join('');
+ const labels=[['goldfish','Goldfish',currentData.goldfish],['dog','Dog',currentData.dog],['elephant','Elephant',currentData.elephant]];
+ document.getElementById('previewGrid').innerHTML=labels.map(([key,name,item])=>'<div class="previewItem"><div class="previewAnimal"><img src="'+GDE_ANIMAL_IMAGES[key]+'" alt="'+name+'"></div><p>'+escapeHTML(item.question)+'</p><p class="hint">'+escapeHTML(item.explanation)+'</p><p class="hint">'+escapeHTML(item.discussionPoint)+'</p></div>').join('');
 }
-function buildDeck(){
+function addAnimalImagesToBoard(html){
+ html=String(html||'').replace('</style>','.phase-animal{height:126px;display:flex;align-items:center;justify-content:center;margin:0 0 12px}.phase-animal img{display:block;max-width:min(280px,50vw);max-height:126px;object-fit:contain}@media(max-width:700px){.phase-animal{height:90px}.phase-animal img{max-height:90px}}</style>');
+ [['Goldfish','goldfish'],['Dog','dog'],['Elephant','elephant']].forEach(([name,key])=>{html=html.replace('<p class="phase">'+name+'</p>','<div class="phase-animal"><img src="'+GDE_ANIMAL_IMAGES[key]+'" alt="'+name+'"></div>')});
+ return html;
+}
+async function buildDeck(){
  try{
   currentData=normaliseResponse(extractJSON(document.getElementById('aiResponse').value));
-  boardHTML=HuttonBoardEnhancer.createSequenceBoard({title:val('lessonTitle')||'Goldfish Dog Elephant',subtitle:[val('subject'),val('yearGroup'),val('keyStage')].filter(Boolean).join(' | '),stages:[
+  await loadGDEAnimalImages();
+  boardHTML=addAnimalImagesToBoard(HuttonBoardEnhancer.createSequenceBoard({title:val('lessonTitle')||'Goldfish Dog Elephant',subtitle:[val('subject'),val('yearGroup'),val('keyStage')].filter(Boolean).join(' | '),stages:[
    {label:'Goldfish',heading:'Last lesson',prompt:currentData.goldfish.question,answer:currentData.goldfish.explanation,answerLabel:'Answer',details:[currentData.goldfish.discussionPoint]},
    {label:'Dog',heading:'About a week ago',prompt:currentData.dog.question,answer:currentData.dog.explanation,answerLabel:'Answer',details:[currentData.dog.discussionPoint]},
    {label:'Elephant',heading:'A long time ago',prompt:currentData.elephant.question,answer:currentData.elephant.explanation,answerLabel:'Answer',details:[currentData.elephant.discussionPoint]}
-  ]});
+  ]}));
   renderPreview();
   document.getElementById('downloadBox').classList.remove('hidden');
   setStatus('Goldfish Dog Elephant questions ready. Download the PowerPoint when you are happy.','ok');
@@ -308,6 +329,10 @@ function loadExample(){
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHuttonRefinement);else initHuttonRefinement();
 })();
+</script>
+
+<script id="hutton-auto-create-after-paste">
+(function(){function init(){const response=document.getElementById('aiResponse');if(!response||typeof buildDeck!=='function'||typeof extractJSON!=='function')return;let timer=null;response.addEventListener('paste',function(){clearTimeout(timer);timer=setTimeout(function(){const text=response.value.trim();if(!text)return;try{extractJSON(text)}catch(e){return}buildDeck()},500)})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();
 </script>
 
 </body>
