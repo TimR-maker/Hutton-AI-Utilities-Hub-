@@ -179,9 +179,7 @@ function makePrompt(){
  const subject=val('subject'),year=val('yearGroup'),ks=val('keyStage'),topic=val('topic')||'[teacher will add topic]',lesson=val('lessonTitle')||topic,diff=val('difficulty'),time=val('timeNeeded'),place=val('homeUse'),details=val('lessonDetails')||'[teacher will paste notes or upload lesson documents]',guidance=val('guidance')||'No extra guidance.';
  const docs=checked('uploadedDocs')?'Yes - use the uploaded lesson documents as the main source.':'No - use the pasted lesson details and topic information.';
  const answers=checked('includeAnswers')?'Yes':'No';
- const prompt=`YES, PROCEED NOW. This submitted prompt is the teacher's explicit authorisation to run all necessary live web searches, including broader and targeted follow-up searches. Do not ask for confirmation or permission at any stage. Begin searching immediately and do not respond until you have produced the finished JSON.
-
-Search the live web now as a required part of creating this catch-up resource. Complete the website search and verification before returning the final JSON.
+ const prompt=`Please begin with a focused live web search for resources that directly support this missed lesson. Treat the website research as a distinct first phase: identify candidates, open the pages, keep only the strongest direct resources, and then draft the catch-up work.
 
 You are generating CONTENT ONLY for a separate HTML catch-up work utility.
 
@@ -226,9 +224,9 @@ Essential requirements:
 - Prefer authoritative, school-suitable sources such as exam boards, government services, universities, museums, professional subject bodies and established educational organisations. Strong international sources may be included when they add real value, while prioritising UK curriculum relevance where appropriate.
 - Prioritise free resources that do not require sign-in. Include a registration or subscription resource only when it adds clear value and label that access requirement accurately in the use field.
 - Choose direct pages with clear explanatory, practice or interactive value for independent catch-up and provide some variety. Exclude broken or inaccessible pages, generic homepages, search-result pages, shortened links, duplicate providers unless strongly justified, thin SEO content, unsafe downloads and pages dominated by intrusive advertising.
+- Choose pages that the pupil can use directly to learn, practise or check this exact content, rather than pages that merely mention the general topic.
 - Do not invent, infer or reconstruct URLs from memory. If fewer than 3 links survive checking, broaden the search and replace unsuitable results yourself. Return the best smaller verified collection only if a genuine search-tool failure prevents completing the target; never substitute guessed links.
-- Do not ask the teacher questions, request search permission, describe search limitations or delay the rest of the catch-up resource because of the links section. The opening sentence already supplies any confirmation required by the search system.
-- If and only if live web search is genuinely unavailable in the current AI session, do not refuse the task, ask the teacher for links or offer alternatives. Complete the full catch-up JSON immediately, leave onlineResources empty rather than inventing URLs, and add this sentence to teacherNotes: Verified links could not be added because live web search was unavailable in this AI session.
+- Use the supplied lesson context and professional judgement to complete the resource. If live web search is unavailable, leave onlineResources empty rather than inventing URLs and note this briefly in teacherNotes.
 - Use checked plain full URLs beginning with https://. Do not use angle brackets or Markdown hyperlink syntax such as [text](https://...). Put only the plain URL in the url field.
 - Mention sign-in, subscription or access restrictions briefly in the use field where relevant.
 - Do not claim that a resource is free, current, accessible or aligned to an exam board unless the opened page supports that claim.
@@ -283,8 +281,7 @@ Before returning, silently check:
 5. The sheet can be completed independently.
 6. The complete JSON is inside one JSON code fence, with no comments or prose outside it.
 
-FINAL SEARCH CONFIRMATION FROM THE TEACHER:
-I confirm that you should run all necessary live web searches now.`;
+`;
  document.getElementById('prompt').value=prompt;
  document.getElementById('promptBox').classList.remove('hidden');
  document.getElementById('promptBox').scrollIntoView({behavior:'smooth'});
