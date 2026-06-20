@@ -1,0 +1,185 @@
+<!doctype html>
+<!--
+© T J Roberts 2026. All rights reserved.
+
+Licensed to Hutton Grammar School for internal educational use only.
+
+This software and associated documentation may not be copied, modified, distributed, sold, published, or shared without written permission.
+
+The copyright and intellectual property rights in this software remain the property of T J Roberts.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hutton AI Utilities Hub</title>
+<link rel="icon" type="image/svg+xml" href="AI Utilities/hutton_ai_hub_icon.svg">
+<style>
+:root{
+  --navy:#0b2348;
+  --navy2:#12315f;
+  --line:#d8e2ee;
+  --text:#132033;
+  --muted:#607089;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(180deg,#f6f9fd,#eaf2fa);
+  color:var(--text);
+}
+header{
+  --header-text-left:max(115px,calc((100% - 980px)/2 + 18px));
+  position:relative;
+  background:#fff;
+  padding:34px 140px 28px var(--header-text-left);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 2px 18px rgba(7,30,60,.06);
+  min-height:150px;
+}
+.hub-logo{
+  position:absolute;
+  left:28px;
+  top:50%;
+  transform:translateY(-50%);
+  width:72px;
+  height:72px;
+  display:block;
+}
+.school-badge{
+  position:absolute;
+  right:34px;
+  top:50%;
+  transform:translateY(-50%);
+  width:110px;
+  height:auto;
+  display:block;
+  z-index:5;
+}
+h1{
+  margin:0;
+  font-size:clamp(2.1rem,4vw,3.4rem);
+  line-height:.98;
+  color:#050b18;
+}
+header p{
+  margin:18px 0 0;
+  max-width:980px;
+  font-size:1.08rem;
+  line-height:1.45;
+  color:#111827;
+}
+main{
+  max-width:980px;
+  margin:34px auto;
+  padding:0 18px 48px;
+}
+.panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 8px 28px rgba(7,30,60,.10);
+  padding:26px;
+  margin-bottom:18px;
+}
+.badge{
+  display:inline-block;
+  background:#eef6ff;
+  border:1px solid #cbd9eb;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:12px;
+}
+h2{
+  margin:0 0 12px;
+  color:var(--navy);
+  font-size:1.45rem;
+}
+p{line-height:1.48}
+.launch{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+  padding:15px 20px;
+  border-radius:12px;
+  background:var(--navy);
+  color:#fff;
+  text-decoration:none;
+  font-weight:800;
+  font-size:1.05rem;
+  box-shadow:0 8px 22px rgba(7,30,60,.18);
+}
+.launch:hover{background:var(--navy2)}
+.steps{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-top:14px;
+}
+.step{
+  background:linear-gradient(180deg,#fff,#f9fbfe);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+}
+.step b{color:var(--navy)}
+.note{
+  background:#fff7e6;
+  border:1px solid #f0d298;
+  border-radius:12px;
+  padding:13px;
+  color:#634500;
+}
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:.84rem;
+  margin-top:18px;
+}
+@media(max-width:760px){
+  header{padding:24px 92px 22px 78px;min-height:120px}
+  .hub-logo{left:18px;top:50%;width:50px;height:50px}
+  .school-badge{right:18px;top:50%;width:64px}
+  .steps{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <img class="hub-logo" src="AI Utilities/hutton_ai_hub_icon.svg" alt="Hutton AI Utilities Hub logo">
+  <img class="school-badge" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAYAAACLz2ctAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAItUSURBVHhe7L0FWJXZ+j5s0L3p[...]
+  <div class="badge">Hutton Grammar School • Teaching & Learning</div>
+  <h1>Hutton AI Utilities Hub</h1>
+  <p>Welcome. This launch page opens the Hutton AI Utilities Hub.</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Launch the Hub</h2>
+    <p>Click the button below to open the main AI Utilities Hub.</p>
+    <a class="launch" href="AI Utilities/Hutton_AI_Utilities_Hub.html">🏠 Open Hutton AI Utilities Hub</a>
+  </section>
+
+  <section class="panel">
+    <h2>Quick reminder</h2>
+    <div class="steps">
+      <div class="step"><b>1. Choose a utility</b><br>Pick the tool that matches the resource you want to create.</div>
+      <div class="step"><b>2. Generate the prompt</b><br>Copy the prompt into ChatGPT or Copilot.</div>
+      <div class="step"><b>3. Paste back</b><br>Paste the AI response into the utility and preview the result.</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Responsible use</h2>
+    <p class="note">Use the 80/20 rule: AI can create a useful first draft, but teachers must check accuracy, suitability and tone. Do not enter identifiable pupil information into public AI tool[...]
+  </section>
+
+  <div class="footer">Hutton Grammar School • AI Utilities Hub launcher</div>
+</main>
+</body>
+</html>
