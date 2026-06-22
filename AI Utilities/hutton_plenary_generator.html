@@ -576,8 +576,8 @@ async function downloadPowerPoint(){
   pptx.company='Hutton Grammar School';
   pptx.theme={headFontFace:'Arial',bodyFontFace:'Arial',lang:'en-GB'};
   slides.forEach((slideEl,idx)=>idx===0?pptxRenderTaskSlide(pptx,slideEl):pptxRenderReviewSlide(pptx,slideEl));
-  const name=(val('lessonTitle')||val('topic')||'plenary-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'plenary-task';
-  await pptx.writeFile({fileName:name+' plenary powerpoint-compatible.pptx'});
+  const name=(val('lessonTitle')||val('topic')||'plenary-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'')||'plenary-task';
+  await pptx.writeFile({fileName:name+' plenary.pptx'});
   setStatus('PowerPoint file created. Check your Downloads folder.','ok');
  }catch(e){
   console.error(e);
@@ -586,7 +586,7 @@ async function downloadPowerPoint(){
   alert(msg);
  }
 }
-function downloadTask(){if(!taskHTML)return;const blob=new Blob([getCleanFinalTaskHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'plenary-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.href=URL.createObjectURL(blob);a.download=name+' plenary task.html';a.click();URL.revokeObjectURL(a.href)}
+function downloadTask(){if(!taskHTML)return;const blob=new Blob([getCleanFinalTaskHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'plenary-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' plenary task.html';a.click();URL.revokeObjectURL(a.href)}
 function openTask(){if(!taskHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalTaskHTML());w.document.close()}
 function loadExample(){document.getElementById('aiResponse').value=JSON.stringify({plenaryTask:{title:'Macbeth: Ambition Review',subject:'English',yearGroup:'Year 10',topic:'Macbeth',lessonTitle:'How is ambition presented?',taskStyle:'One-sentence summary',displayText:'In one sentence, explain how Shakespeare presents ambition as dangerous in Macbeth.',studentInstructions:['Write one clear sentence using the word ambition.','Include one reference to Macbeth or Lady Macbeth.','Be ready to improve your sentence after the reveal.'],thinkingPrompts:['What does ambition make Macbeth do?','Which quotation or moment could support your idea?','How could you make the sentence more precise?'],challenge:'Challenge: add a second sentence explaining Shakespeare’s message to the audience.',teacherCue:'Ask pupils to compare responses, then reveal the model answer and improve one sentence.',answerSlide:{title:'Review / Suggested Response',idealAnswers:['Shakespeare presents ambition as dangerous because it pushes Macbeth to betray Duncan and destroy his own morality.','A stronger answer links ambition to consequence, not just desire for power.'],discussionPoints:['What makes the sentence specific rather than vague?','Which word best captures Shakespeare’s warning about ambition?'],misconceptions:['Ambition is not shown as automatically bad; uncontrolled ambition is the problem.','A good answer should explain Shakespeare’s message, not just retell the plot.']}}},null,2)}
 </script>

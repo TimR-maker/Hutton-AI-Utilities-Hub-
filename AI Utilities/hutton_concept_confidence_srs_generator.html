@@ -475,8 +475,8 @@ async function downloadPowerPoint(){
   pptx.company='Hutton Grammar School';
   pptx.theme={headFontFace:'Arial',bodyFontFace:'Arial',lang:'en-GB'};
   slideEls.forEach((slideEl,idx)=>pptxRenderSlide(pptx,slideEl,idx));
-  const name=(val('lessonTitle')||val('topic')||'concept-confidence').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'concept-confidence';
-  await pptx.writeFile({fileName:name+' concept confidence powerpoint-compatible.pptx'});
+  const name=(val('lessonTitle')||val('topic')||'concept-confidence').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'')||'concept-confidence';
+  await pptx.writeFile({fileName:name+' concept confidence.pptx'});
   if(typeof setStatus==='function')setStatus('PowerPoint file created. Check your Downloads folder.','ok');
  }catch(e){
   console.error(e);
@@ -485,7 +485,7 @@ async function downloadPowerPoint(){
   alert(msg);
  }
 }
-function downloadDeck(){if(!deckHTML)return;const blob=new Blob([getCleanFinalDeckHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'concept-confidence').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.href=URL.createObjectURL(blob);a.download=name+' concept confidence srs.html';a.click();URL.revokeObjectURL(a.href)}
+function downloadDeck(){if(!deckHTML)return;const blob=new Blob([getCleanFinalDeckHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'concept-confidence').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' concept confidence srs.html';a.click();URL.revokeObjectURL(a.href)}
 function openDeck(){if(!deckHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalDeckHTML());w.document.close()}
 function loadExample(){document.getElementById('aiResponse').value=JSON.stringify({conceptSRS:{title:'Energy Resources Concept Confidence SRS',subject:'Physics',topic:'Energy resources',keyStage:'KS4 / GCSE (Years 10–11)',demand:'Standard',concepts:[{statement:'I can explain why different energy resources have different environmental impacts.',context:'Think about fossil fuels, nuclear power and renewable energy resources.',reflectionPrompt:'Choose the card that best shows your confidence. Be honest: this is about what to revisit next.',followUp:{title:'Understanding environmental impacts',secureUnderstanding:['You can compare carbon emissions, waste, land use and reliability.','You can explain that no energy resource is impact-free.'],partialUnderstanding:['You can name some impacts but may not compare them clearly.','You may know renewables are lower carbon but forget other impacts.'],commonMisconceptions:['Renewable always means no environmental impact.','Nuclear power releases carbon dioxide during electricity generation.'],nextSteps:['Choose one energy resource and explain one advantage and one disadvantage.','Discuss which impact matters most: climate, cost, reliability or local environment.']}}]}},null,2)}
 </script>

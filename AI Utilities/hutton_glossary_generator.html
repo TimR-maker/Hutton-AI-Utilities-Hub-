@@ -323,7 +323,7 @@ function renderResource(g){
 }
 function buildResource(){try{const data=normalise(extractJSON(val('aiResponse')));resourceHTML=renderResource(data);document.getElementById('downloadBox').classList.remove('hidden');document.getElementById('preview').srcdoc=resourceHTML;setStatus('Glossary created successfully.','ok');document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});}catch(e){setStatus('Could not create the glossary: '+e.message,'bad')}}
 function getCleanFinalHTML(){const frame=document.getElementById('preview');let doc=null;try{doc=frame&&frame.contentDocument?frame.contentDocument:null}catch(e){}if(!doc||!doc.documentElement)return resourceHTML;const clone=doc.documentElement.cloneNode(true);clone.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));clone.querySelectorAll('style').forEach(style=>{style.textContent=style.textContent.replace(/\[contenteditable="true"\][^{}]*\{[^{}]*\}/g,'').replace(/\[contenteditable="true"\]:focus[^{}]*\{[^{}]*\}/g,'')});return '<!doctype html>'+clone.outerHTML}
-function downloadResource(){if(!resourceHTML)return;const blob=new Blob([getCleanFinalHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('topic')||'glossary').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.href=URL.createObjectURL(blob);a.download=name+' glossary.html';a.click();URL.revokeObjectURL(a.href)}
+function downloadResource(){if(!resourceHTML)return;const blob=new Blob([getCleanFinalHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('topic')||'glossary').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' glossary.html';a.click();URL.revokeObjectURL(a.href)}
 function openResource(){if(!resourceHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalHTML());w.document.close()}
 function loadExample(){document.getElementById('aiResponse').value=JSON.stringify({glossary:{title:'Atomic Structure Glossary',subject:'Physics',topic:'Atomic structure',keyStage:'KS4 / GCSE (Years 10–11)',level:'Standard',outputFormat:'Printable glossary table',terms:[{term:'Atom',definition:'The smallest part of an element that can still be identified as that element.'},{term:'Nucleus',definition:'The small central part of an atom containing protons and neutrons.'},{term:'Electron',definition:'A tiny negatively charged particle found around the nucleus.'}]}},null,2)}
 
@@ -422,7 +422,7 @@ function downloadWord(){
  const a=document.createElement('a');
  const base=((val('topic')||'glossary')+' glossary').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'glossary';
  a.href=url;
- a.download=base+'.doc';
+ a.download=(base.length>64?base.slice(0,36).replace(/_+$/,'')+'_'+base.slice(-24).replace(/^_+/,''):base)+'.doc';
  document.body.appendChild(a);
  a.click();
  a.remove();

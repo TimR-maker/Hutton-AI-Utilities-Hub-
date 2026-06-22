@@ -250,7 +250,7 @@ function normalise(data){
  return{title:o.title||'Learning Objectives & Success Criteria',subject:o.subject||val('subject'),yearGroup:o.yearGroup||o.year_group||val('yearGroup'),topic:o.topic||val('topic'),lessonTitle:o.lessonTitle||o.lesson_title||val('lessonTitle')||val('topic'),demand:o.demand||val('demand'),priorLearningLink:o.priorLearningLink||o.prior_learning_link||'',learningObjectives:items,assessmentNote:o.assessmentNote||o.assessment_note||'',challengeExtension:o.challengeExtension||o.challenge_extension||'',teacherNotes:o.teacherNotes||o.teacher_notes||''};
 }
 function listHTML(items){return arr(items).map(x=>`<li contenteditable="true">${escapeHTML(x)}</li>`).join('')}
-function slug(s){return String(s||'objectives-success-criteria').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'objectives-success-criteria'}
+function slug(s){const clean=String(s||'objectives-success-criteria').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');return clean.slice(0,42).replace(/-+$/,'')||'objectives-success-criteria'}
 
 function renderResource(d){
  const objectiveCards=d.learningObjectives.map((item,i)=>`<section class="objective-card"><h2 contenteditable="true">Learning objective ${i+1}</h2><p class="objective" contenteditable="true">${escapeHTML(item.objective)}</p><h3>Success criteria</h3><ul>${listHTML(item.successCriteria)}</ul></section>`).join('');
@@ -348,7 +348,7 @@ function downloadWord(){
  const a=document.createElement('a');
  const base=(slug(val('lessonTitle')||val('topic')||(resourceData&&resourceData.lessonTitle)||'objectives-success-criteria')+' objectives success criteria').replace(/-/g,'_').replace(/ /g,'_');
  a.href=url;
- a.download=base+'.doc';
+ a.download=(base.length>64?base.slice(0,36).replace(/_+$/,'')+'_'+base.slice(-24).replace(/^_+/,''):base)+'.doc';
  document.body.appendChild(a);
  a.click();
  a.remove();
@@ -420,7 +420,7 @@ async function pptSaveWithZip(slides,title){
  slides.forEach((s,i)=>zip.file('ppt/slides/slide'+(i+1)+'.xml',s));
  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
  const url=URL.createObjectURL(blob);
- const a=document.createElement('a');a.href=url;a.download=slug(title)+' powerpoint-compatible.pptx';document.body.appendChild(a);a.click();
+ const a=document.createElement('a');a.href=url;a.download=slug(title)+'.pptx';document.body.appendChild(a);a.click();
  setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000);
 }
 async function downloadPowerPoint(){
@@ -498,7 +498,7 @@ async function downloadPowerPoint(){
   const slide3=pptxAddShell(pptx,'Challenge and Teacher Notes',meta);
   pptxAddBox(slide3,'Challenge extension',[resourceData.challengeExtension||'Apply the learning to a new example or justify a response.'],0.85,1.65,8.3,1.1,PPT_COLORS.cream,15);
   pptxAddBox(slide3,'Teacher notes',[resourceData.teacherNotes||'Use the success criteria to check the quality of pupil responses.',resourceData.assessmentNote||'Listen for precise subject vocabulary and independent application.'],0.85,3.05,8.3,1.55,PPT_COLORS.white,12.5);
-  await pptx.writeFile({fileName:slug(val('lessonTitle')||val('topic')||title)+' objectives success criteria powerpoint-compatible.pptx'});
+  await pptx.writeFile({fileName:slug(val('lessonTitle')||val('topic')||title)+' objectives success criteria.pptx'});
   setStatus('PowerPoint file created. Check your Downloads folder.','ok');
  }catch(e){setStatus('PowerPoint export failed: '+(e&&e.message?e.message:e),'bad')}
 }

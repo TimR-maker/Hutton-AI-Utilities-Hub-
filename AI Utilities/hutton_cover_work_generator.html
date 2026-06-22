@@ -320,7 +320,7 @@ function downloadWord(){
  const a=document.createElement('a');
  a.href=url;
  const base=((val('lessonTitle')||val('topic')||'cover-work')+' cover work').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'cover_work';
- a.download=base+'.doc';
+ a.download=(base.length>64?base.slice(0,36).replace(/_+$/,'')+'_'+base.slice(-24).replace(/^_+/,''):base)+'.doc';
  document.body.appendChild(a);
  a.click();
  a.remove();

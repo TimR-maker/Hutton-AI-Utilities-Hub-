@@ -486,8 +486,8 @@ async function downloadPowerPoint(){
   pptx.company='Hutton Grammar School';
   pptx.theme={headFontFace:'Arial',bodyFontFace:'Arial',lang:'en-GB'};
   slideEls.forEach((slideEl,idx)=>pptxRenderSlide(pptx,slideEl,idx));
-  const name=(val('lessonTitle')||val('topic')||'true-false').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'true-false';
-  await pptx.writeFile({fileName:name+' true false powerpoint-compatible.pptx'});
+  const name=(val('lessonTitle')||val('topic')||'true-false').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'')||'true-false';
+  await pptx.writeFile({fileName:name+' true false.pptx'});
   if(typeof setStatus==='function')setStatus('PowerPoint file created. Check your Downloads folder.','ok');
  }catch(e){
   console.error(e);
@@ -496,7 +496,7 @@ async function downloadPowerPoint(){
   alert(msg);
  }
 }
-function downloadDeck(){if(!deckHTML)return;const blob=new Blob([getCleanFinalDeckHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'true-false').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.href=URL.createObjectURL(blob);a.download=name+' true false.html';a.click();URL.revokeObjectURL(a.href)}
+function downloadDeck(){if(!deckHTML)return;const blob=new Blob([getCleanFinalDeckHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'true-false').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' true false.html';a.click();URL.revokeObjectURL(a.href)}
 function openDeck(){if(!deckHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalDeckHTML());w.document.close()}
 function loadExample(){document.getElementById('aiResponse').value=JSON.stringify({trueFalse:{title:'Refraction True/False',subject:'Physics',topic:'Refraction of light',keyStage:'KS3 (Years 7–9)',demand:'Standard',questions:[{statement:'Light changes direction when it passes from air into glass at an angle.',correct:true,explanation:'This is true. Light refracts when it changes speed moving between materials.',correction:'Refraction happens at a boundary when light changes speed.'},{statement:'Refraction only happens when light reflects from a mirror.',correct:false,explanation:'This is false. Reflection and refraction are different processes.',correction:'Refraction happens when light passes into a different material and changes direction.'}]}},null,2)}
 </script>

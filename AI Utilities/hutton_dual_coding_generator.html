@@ -400,7 +400,7 @@ function downloadFormatted(){
  if(!formattedHTML)return;
  const blob=new Blob([getCleanFormattedHTML()],{type:'text/html'});
  const a=document.createElement('a');
- const name=(val('title')||'dual-coded-resource').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+ const name=(val('title')||'dual-coded-resource').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');
  a.href=URL.createObjectURL(blob);
  a.download=name+' formatted dual coding.html';
  a.click();
@@ -502,7 +502,7 @@ function downloadWord(){
  const a=document.createElement('a');
  const base=((val('title')||'dual-coding')+' dual coding').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'dual_coding';
  a.href=url;
- a.download=base+'.doc';
+ a.download=(base.length>64?base.slice(0,36).replace(/_+$/,'')+'_'+base.slice(-24).replace(/^_+/,''):base)+'.doc';
  document.body.appendChild(a);
  a.click();
  a.remove();

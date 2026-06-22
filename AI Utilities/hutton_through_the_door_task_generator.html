@@ -577,8 +577,8 @@ async function downloadPowerPoint(){
   pptx.company='Hutton Grammar School';
   pptx.theme={headFontFace:'Arial',bodyFontFace:'Arial',lang:'en-GB'};
   slides.forEach((slideEl,idx)=>idx===0?pptxRenderTaskSlide(pptx,slideEl):pptxRenderReviewSlide(pptx,slideEl));
-  const name=(val('lessonTitle')||val('topic')||'through-the-door-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'through-the-door-task';
-  await pptx.writeFile({fileName:name+' through the door task powerpoint-compatible.pptx'});
+  const name=(val('lessonTitle')||val('topic')||'through-the-door-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'')||'through-the-door-task';
+  await pptx.writeFile({fileName:name+' through the door task.pptx'});
   setStatus('PowerPoint file created. Check your Downloads folder.','ok');
  }catch(e){
   console.error(e);
@@ -587,7 +587,7 @@ async function downloadPowerPoint(){
   alert(msg);
  }
 }
-function downloadTask(){if(!taskHTML)return;const blob=new Blob([getCleanFinalTaskHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'through-the-door-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.href=URL.createObjectURL(blob);a.download=name+' through the door task.html';a.click();URL.revokeObjectURL(a.href)}
+function downloadTask(){if(!taskHTML)return;const blob=new Blob([getCleanFinalTaskHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'through-the-door-task').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' through the door task.html';a.click();URL.revokeObjectURL(a.href)}
 function openTask(){if(!taskHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalTaskHTML());w.document.close()}
 function loadExample(){document.getElementById('aiResponse').value=JSON.stringify({doorTask:{title:'Macbeth: First Impressions',subject:'English',yearGroup:'Year 10',topic:'Macbeth',lessonTitle:'How is Macbeth presented at the start?',taskStyle:'What connects these?',displayText:'What connects these three words: brave, loyal, violent?',studentInstructions:['Write one sentence explaining the connection.','Be ready to add one quotation or moment from the play if you know one.'],thinkingPrompts:['What do these words suggest about Macbeth?','Can a character be both heroic and dangerous?','Which word feels most positive or negative?'],challenge:'Challenge: predict how this combination of traits might cause problems later.',teacherCue:'Take quick responses and link to Macbeth as a tragic hero.'}},null,2)}
 </script>

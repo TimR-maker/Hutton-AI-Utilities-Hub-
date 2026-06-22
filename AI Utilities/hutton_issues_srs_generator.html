@@ -401,8 +401,8 @@ async function downloadPowerPoint(){
   pptx.company='Hutton Grammar School';
   pptx.theme={headFontFace:'Arial',bodyFontFace:'Arial',lang:'en-GB'};
   slideEls.forEach((slideEl,idx)=>pptxRenderSlide(pptx,slideEl,idx));
-  const name=(val('lessonTitle')||val('topic')||'issues-srs').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'issues-srs';
-  await pptx.writeFile({fileName:name+' issues srs powerpoint-compatible.pptx'});
+  const name=(val('lessonTitle')||val('topic')||'issues-srs').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'')||'issues-srs';
+  await pptx.writeFile({fileName:name+' issues srs.pptx'});
   if(typeof setStatus==='function')setStatus('PowerPoint file created. Check your Downloads folder.','ok');
  }catch(e){
   console.error(e);
@@ -411,7 +411,7 @@ async function downloadPowerPoint(){
   alert(msg);
  }
 }
-function downloadDeck(){if(!deckHTML)return;const blob=new Blob([getCleanFinalDeckHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'issues-srs').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.href=URL.createObjectURL(blob);a.download=name+' issues srs.html';a.click();URL.revokeObjectURL(a.href)}
+function downloadDeck(){if(!deckHTML)return;const blob=new Blob([getCleanFinalDeckHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('lessonTitle')||val('topic')||'issues-srs').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' issues srs.html';a.click();URL.revokeObjectURL(a.href)}
 function openDeck(){if(!deckHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalDeckHTML());w.document.close()}
 function loadExample(){document.getElementById('aiResponse').value=JSON.stringify({issuesSRS:{title:'Energy Resources Issues SRS',subject:'Physics',topic:'Energy resources',keyStage:'KS4 / GCSE (Years 10–11)',demand:'Standard',issues:[{statement:'Fracking should be banned in the UK.',context:'Fracking can release natural gas from underground rock, but it can also raise environmental and community concerns.',discussionPrompt:'Choose your card and be ready to explain one reason for your view.',balancedEvaluation:{title:'Should fracking be banned in the UK?',agreeArguments:['It may increase fossil fuel use and carbon dioxide emissions.','Local communities may worry about traffic, noise and small earth tremors.'],disagreeArguments:['It could improve energy security by producing more domestic gas.','It may provide jobs and tax income while renewable capacity grows.'],stakeholders:[{group:'Local residents',interest:'Noise, traffic, house prices and safety.'},{group:'Energy companies',interest:'Access to resources, profit and employment.'},{group:'Climate campaigners',interest:'Reducing reliance on fossil fuels.'}],discussionQuestions:['Is energy security worth some environmental risk?','Who should get the biggest say: local residents or national government?']}}]}},null,2)}
 </script>

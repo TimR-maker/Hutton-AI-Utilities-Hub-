@@ -174,7 +174,7 @@ function buildDeck(){
   document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});
  }catch(e){setStatus(e.message,'bad')}
 }
-function boardFilename(){return (val('lessonTitle')||val('topic')||'think-pair-share').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+' think-pair-share interactive board.html'}
+function boardFilename(){const topic=(val('lessonTitle')||val('topic')||'think-pair-share').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');return topic+' think-pair-share.html'}
 function downloadBoard(){if(!boardHTML){setStatus('Create the activity first.','bad');return}const blob=new Blob([boardHTML],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=boardFilename();a.click();URL.revokeObjectURL(a.href)}
 function openBoard(){if(!boardHTML){setStatus('Create the activity first.','bad');return}const w=window.open('','_blank');if(!w){setStatus('Allow pop-ups to open the interactive board.','bad');return}w.document.open();w.document.write(boardHTML);w.document.close()}
 async function downloadDeck(){
@@ -195,7 +195,7 @@ async function downloadDeck(){
  s5=pptxReplaceText(s5,'Each branch provides a separate path | Current can still flow in other branches | This makes parallel circuits useful in homes',discussion);
  zip.file('ppt/slides/slide5.xml',s5);
  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
- pptxDownloadBlob(blob,pptxCleanFilename(val('lessonTitle')||val('topic')||'think-pair-share','think-pair-share')+' think-pair-share.pptx');
+ pptxDownloadBlob(blob,pptxCleanFilename(val('lessonTitle')||val('topic')||'think-pair-share','think-pair-share').slice(0,42).replace(/-+$/,'')+' think-pair-share.pptx');
  setStatus('PowerPoint downloaded.','ok');
 }
 function loadExample(){

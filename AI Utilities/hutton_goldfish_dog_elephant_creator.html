@@ -199,7 +199,7 @@ async function buildDeck(){
   document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});
  }catch(e){setStatus(e.message,'bad')}
 }
-function boardFilename(){return (val('lessonTitle')||'goldfish-dog-elephant').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+' goldfish-dog-elephant interactive board.html'}
+function boardFilename(){const topic=(val('lessonTitle')||'goldfish-dog-elephant').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');return topic+' goldfish-dog-elephant.html'}
 function downloadBoard(){if(!boardHTML){setStatus('Create the activity first.','bad');return}const blob=new Blob([boardHTML],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=boardFilename();a.click();URL.revokeObjectURL(a.href)}
 function openBoard(){if(!boardHTML){setStatus('Create the activity first.','bad');return}const w=window.open('','_blank');if(!w){setStatus('Allow pop-ups to open the interactive board.','bad');return}w.document.open();w.document.write(boardHTML);w.document.close()}
 async function downloadDeck(){
@@ -219,7 +219,7 @@ async function downloadDeck(){
  s2=pptxSetShapeTextRuns(s2,'30019',['Answer: '+currentData.elephant.explanation,'Discuss: '+currentData.elephant.discussionPoint]);
  zip.file('ppt/slides/slide2.xml',s2);
  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
- pptxDownloadBlob(blob,pptxCleanFilename(val('lessonTitle')||'goldfish-dog-elephant','goldfish-dog-elephant')+' goldfish-dog-elephant.pptx');
+ pptxDownloadBlob(blob,pptxCleanFilename(val('lessonTitle')||'goldfish-dog-elephant','goldfish-dog-elephant').slice(0,42).replace(/-+$/,'')+' goldfish-dog-elephant.pptx');
  setStatus('PowerPoint downloaded.','ok');
 }
 function loadExample(){
