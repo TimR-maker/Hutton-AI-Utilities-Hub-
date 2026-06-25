@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Hutton AI Utilities Hub icon</title>
+  <desc id="desc">A navy rounded square with a white H, gold arcs and connected AI nodes.</desc>
+  <rect width="64" height="64" rx="14" fill="#0b2348"/>
+  <path d="M18 17v30M46 17v30M18 32h28" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M22 20c7 4 13 4 20 0M22 44c7-4 13-4 20 0" stroke="#f0c24b" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="32" cy="20" r="4.2" fill="#f0c24b"/>
+  <circle cx="22" cy="32" r="3.5" fill="#8cc7ff"/>
+  <circle cx="42" cy="32" r="3.5" fill="#8cc7ff"/>
+  <circle cx="32" cy="44" r="4.2" fill="#f0c24b"/>
+</svg>
