@@ -1,20 +1,25 @@
-// Netlify Function: generate-resource
-// Put this file at: netlify/functions/generate-resource.js
-// Store your OpenAI key in Netlify as OPENAI_API_KEY.
+// Teacher AI Hub Premium API Function
+// Location in your site: netlify/functions/generate-resource.js
+// Required Netlify environment variable: OPENAI_API_KEY
+// Optional Netlify environment variable: OPENAI_MODEL, for example gpt-4.1-mini
 
 function jsonResponse(statusCode, body) {
   return {
     statusCode,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    },
     body: JSON.stringify(body)
   };
 }
 
 function extractOutputText(data) {
-  if (typeof data.output_text === "string") return data.output_text;
+  if (typeof data?.output_text === "string") return data.output_text;
+
   const chunks = [];
-  for (const item of data.output || []) {
-    for (const content of item.content || []) {
+  for (const item of data?.output || []) {
+    for (const content of item?.content || []) {
       if (typeof content.text === "string") chunks.push(content.text);
     }
   }
@@ -22,16 +27,24 @@ function extractOutputText(data) {
 }
 
 function safeSchemaName(name) {
-  return String(name || "teacher_ai_hub_resource").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64) || "teacher_ai_hub_resource";
+  return String(name || "teacher_ai_hub_resource")
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 64) || "teacher_ai_hub_resource";
 }
 
 exports.handler = async function(event) {
   if (event.httpMethod !== "POST") {
-    return jsonResponse(405, { ok: false, error: "Method not allowed. Use POST from the utility page." });
+    return jsonResponse(405, {
+      ok: false,
+      error: "Method not allowed. Use POST from a Teacher AI Hub utility page."
+    });
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    return jsonResponse(500, { ok: false, error: "OPENAI_API_KEY is not set in Netlify environment variables." });
+    return jsonResponse(500, {
+      ok: false,
+      error: "OPENAI_API_KEY is not set in Netlify environment variables."
+    });
   }
 
   try {
@@ -39,11 +52,15 @@ exports.handler = async function(event) {
     const prompt = String(requestBody.prompt || "").trim();
     const schema = requestBody.schema;
     const schemaName = safeSchemaName(requestBody.schemaName);
-    const systemMessage = String(requestBody.systemMessage || "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema.").trim();
+    const systemMessage = String(
+      requestBody.systemMessage ||
+      "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema."
+    ).trim();
 
     if (!prompt) {
       return jsonResponse(400, { ok: false, error: "Missing prompt." });
     }
+
     if (!schema || typeof schema !== "object") {
       return jsonResponse(400, { ok: false, error: "Missing JSON schema." });
     }
@@ -76,7 +93,7 @@ exports.handler = async function(event) {
     if (!openaiResponse.ok) {
       return jsonResponse(openaiResponse.status, {
         ok: false,
-        error: data?.error?.message || "OpenAI API request failed. Check API key, billing and model access."
+        error: data?.error?.message || "OpenAI API request failed. Check API key, billing, usage limits and model access."
       });
     }
 
@@ -96,8 +113,15 @@ exports.handler = async function(event) {
       });
     }
 
-    return jsonResponse(200, { ok: true, result: parsed, jsonText: JSON.stringify(parsed, null, 2) });
+    return jsonResponse(200, {
+      ok: true,
+      result: parsed,
+      jsonText: JSON.stringify(parsed, null, 2)
+    });
   } catch (error) {
-    return jsonResponse(500, { ok: false, error: error.message || "Unexpected server error." });
+    return jsonResponse(500, {
+      ok: false,
+      error: error.message || "Unexpected server error."
+    });
   }
 };
