@@ -102,7 +102,8 @@ footer{font-size:.8rem;color:var(--muted);text-align:center;margin-top:16px}@med
 
 <div class="full"><label for="guidance">Additional teacher guidance</label><textarea id="guidance" rows="3" placeholder="e.g. AQA GCSE Physics; include symbols and units; include French gender; avoid overly advanced terms; focus on exam command words..."></textarea></div>
 </div>
-<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button type="button" class="primary" id="apiGenerateBtn">Generate glossary</button></div>
+<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button type="button" class="primary" id="apiGenerateBtn" onclick="generateGlossaryWithAPI()">Generate glossary</button></div>
+<div id="status" class="status" aria-live="polite"></div>
 </section>
 
 <textarea id="aiResponse" class="hidden" aria-hidden="true"></textarea>
@@ -129,7 +130,12 @@ function val(id){const el=document.getElementById(id);return el?el.value.trim():
 function checked(id){const el=document.getElementById(id);return !!(el&&el.checked)}
 function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function arr(x){return Array.isArray(x)?x:[]}
-function setStatus(msg,type){const el=document.getElementById('status'); if(!msg){el.innerHTML='';return} el.innerHTML=`<p class="warning ${type==='bad'?'bad':'ok'}">${escapeHTML(msg)}</p>`}
+function setStatus(msg,type){
+ const el=document.getElementById('status');
+ if(!el){ if(msg) console.log(msg); return; }
+ if(!msg){el.innerHTML='';return;}
+ el.innerHTML=`<p class="warning ${type==='bad'?'bad':'ok'}">${escapeHTML(msg)}</p>`;
+}
 
 function getSavedLessonContext(){try{return JSON.parse(localStorage.getItem('huttonAILessonContext')||'{}')}catch(e){return {}}}
 function setSelectIfPossible(id,value){
@@ -458,11 +464,6 @@ function downloadWord(){
  URL.revokeObjectURL(url);
 }
 
-
-document.addEventListener('DOMContentLoaded', function(){
- const btn=document.getElementById('apiGenerateBtn');
- if(btn) btn.addEventListener('click', generateGlossaryWithAPI);
-});
 
 </script>
 
