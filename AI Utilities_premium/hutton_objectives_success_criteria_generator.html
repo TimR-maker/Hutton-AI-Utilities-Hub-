@@ -15,6 +15,7 @@ The copyright and intellectual property rights in this software remain the prope
 <title>Hutton Grammar School Objectives & Success Criteria Generator</title>
 <script src="jszip.min.js"></script>
 <script src="pptxgen.bundle.js"></script>
+<script src="shared/hutton-premium-api.js"></script>
 <link rel="icon" type="image/svg+xml" href="hutton_ai_hub_icon.svg">
 <style>
 :root{--navy:#0b2348;--navy2:#12315f;--line:#d8e2ee;--text:#132033;--muted:#607089;--focus:#315a98}
@@ -61,7 +62,7 @@ footer{font-size:.8rem;color:var(--muted);text-align:center;margin-top:16px}
 </header>
 
 <main>
-<section class="card"><div class="tabs"><span class="pill">1. Build AI prompt</span><span class="pill">2. Paste AI response</span><span class="pill">3. Preview and download</span></div></section>
+<section class="card"><div class="tabs"><span class="pill">1. Describe resource</span><span class="pill">2. Generate automatically</span><span class="pill">3. Preview and download</span></div></section>
 
 <section class="card">
 <h2><span class="step">1</span>Outline the lesson</h2>
@@ -76,23 +77,12 @@ footer{font-size:.8rem;color:var(--muted);text-align:center;margin-top:16px}
 <div><label for="style">Style</label><select id="style"><option selected>Clear classroom wording</option><option>Pupil-friendly 'I can' wording</option><option>Exam-focused wording</option><option>Knowledge and skills wording</option></select></div>
 <div class="full"><label for="lessonOutline">Lesson outline / teacher notes</label><textarea id="lessonOutline" rows="7" placeholder="Briefly outline what pupils will learn, the main task, prior learning, misconceptions, assessment focus, or any must-include subject knowledge."></textarea><p class="hint">This free text box is the most important field. Paste rough notes, a lesson idea, a scheme-of-work extract or a short paragraph.</p></div>
 </div>
-<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" onclick="makePrompt()">Generate AI prompt</button></div>
+<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" id="generateResourceBtn"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Generate objectives and success criteria</button></div>
 </section>
 
-<section class="card hidden" id="promptBox">
-<h2><span class="step">2</span>Copy this into ChatGPT, Copilot or Claude</h2>
-<p class="warning ok">Ask the AI to return only the JSON block. Then copy the AI response and paste it below.</p>
-<textarea id="prompt" readonly></textarea>
-<div class="actions"><button class="secondary" onclick="copyText('prompt')"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>Copy prompt</button><a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="">Open ChatGPT</a><a class="btn" href="https://copilot.microsoft.com/" target="_blank" rel="noopener"><img class="brand-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xNi4xNDM3IDUuMzQ5MzJDMTUuOTEwMSA0LjU0OTY2IDE1LjE3NyA0IDE0LjM0MzkgNEwxMy43NDI3IDRDMTIuODQ2NyA0IDEyLjA3NTggNC42MzQgMTEuOTAzIDUuNTEzMjFMMTAuODUzNSAxMC44NTAxTDExLjE1MDkgOS44OTEwMkMxMS4zOTQzIDkuMTA2MyAxMi4xMjAyIDguNTcxNDMgMTIuOTQxOCA4LjU3MTQzTDE2LjIzNTEgOC41NzE0M0wxNy42MzUyIDkuNzQzNDdMMTguODgxOCA4LjU3MTQzSDE4LjQ5MDVDMTcuNjU3NCA4LjU3MTQzIDE2LjkyNDIgOC4wMjE3NyAxNi42OTA3IDcuMjIyMTFMMTYuMTQzNyA1LjM0OTMyWiIgZmlsbD0idXJsKCNwYWludDBfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOC4wNDkyIDE4LjY0NDdDOC4yODAxNyAxOS40NDgyIDkuMDE1MTkgMjAuMDAxNyA5Ljg1MTIxIDIwLjAwMTdIMTEuMDc1QzEyLjA4NDQgMjAuMDAxNyAxMi45MTI2IDE5LjIwMjUgMTIuOTQ4OCAxOC4xOTM4TDEzLjEyOTUgMTMuMTQ0NUwxMi44NDIgMTQuMDk3MUMxMi42MDMxIDE0Ljg4ODYgMTEuODczOCAxNS40MzAyIDExLjA0NyAxNS40MzAyTDcuNzMzODMgMTUuNDMwMkw2LjM0OTU5IDE0LjU0NTFMNS4zMjgxMiAxNS40MzAySDUuNzEzMjRDNi41NDkyNiAxNS40MzAyIDcuMjg0MjcgMTUuOTgzNyA3LjUxNTI0IDE2Ljc4NzJMOC4wNDkyIDE4LjY0NDdaIiBmaWxsPSJ1cmwoI3BhaW50MV9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50Ml9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50M19saW5lYXJfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik05Ljc0OTAyIDIwLjAwMDZIMTYuMzExNUMxOC4xODY1IDIwLjAwMDYgMTkuMzExNCAxNy42MDM5IDIwLjA2MTQgMTUuMjA3M0MyMC45NSAxMi4zNjc4IDIyLjExMjcgOC41NzAzMSAxOC43NDg5IDguNTcwMzFIMTUuODg3N0MxNS4wNTU3IDguNTcwMzEgMTQuMzIzOCA5LjExNjU3IDE0LjA4OCA5LjkxNDQ0QzEzLjU5NDYgMTEuNTgzOSAxMi43MzQzIDE0LjQ4MSAxMi4wNTgyIDE2LjY4OEMxMS43MTM2IDE3LjgxMyAxMS40MjY1IDE4Ljc3OTIgMTAuOTg1OSAxOS4zODA4QzEwLjczODkgMTkuNzE4MSAxMC4zMjczIDIwLjAwMDYgOS43NDkwMiAyMC4wMDA2WiIgZmlsbD0idXJsKCNwYWludDRfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOS43NDkwMiAyMC4wMDA2SDE2LjMxMTVDMTguMTg2NSAyMC4wMDA2IDE5LjMxMTQgMTcuNjAzOSAyMC4wNjE0IDE1LjIwNzNDMjAuOTUgMTIuMzY3OCAyMi4xMTI3IDguNTcwMzEgMTguNzQ4OSA4LjU3MDMxSDE1Ljg4NzdDMTUuMDU1NyA4LjU3MDMxIDE0LjMyMzggOS4xMTY1NyAxNC4wODggOS45MTQ0NEMxMy41OTQ2IDExLjU4MzkgMTIuNzM0MyAxNC40ODEgMTIuMDU4MiAxNi42ODhDMTEuNzEzNiAxNy44MTMgMTEuNDI2NSAxOC43NzkyIDEwLjk4NTkgMTkuMzgwOEMxMC43Mzg5IDE5LjcxODEgMTAuMzI3MyAyMC4wMDA2IDkuNzQ5MDIgMjAuMDAwNloiIGZpbGw9InVybCgjcGFpbnQ1X2xpbmVhcl8xNDQ5XzYxNTA5KSIvPg0KPGRlZnM+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50MF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxNy43MTI4IDEwLjg5NDgpIHJvdGF0ZSgtMTI5LjE0MSkgc2NhbGUoNy4yMDc1MSA2Ljc2OTUzKSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDk1NTc1OCIgc3RvcC1jb2xvcj0iIzAwQUVGRiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjc3MzE4NSIgc3RvcC1jb2xvcj0iIzIyNTNDRSIvPg0KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDczNkM0Ii8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDFfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi43NDM0NyAxNS40MDI0KSByb3RhdGUoNTEuNzMyOCkgc2NhbGUoNi41ODY0NyA2LjM5NDgzKSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjRkZCNjU3Ii8+DQo8c3RvcCBvZmZzZXQ9IjAuNjMzNzI4IiBzdG9wLWNvbG9yPSIjRkY1RjNEIi8+DQo8c3RvcCBvZmZzZXQ9IjAuOTIzMzkyIiBzdG9wLWNvbG9yPSIjQzAyQjNDIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDJfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNy41MjUyMiAxNS40MzAxKSByb3RhdGUoLTkzLjM1ODUpIHNjYWxlKDEwLjE0ODcgNTguOTA1KSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDMiIHN0b3AtY29sb3I9IiNGRkM4MDAiLz4NCjxzdG9wIG9mZnNldD0iMC4zMSIgc3RvcC1jb2xvcj0iIzk4QkQ0MiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjQ5IiBzdG9wLWNvbG9yPSIjNTJCNDcxIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODQzODM4IiBzdG9wLWNvbG9yPSIjMEQ5MUUxIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSI4LjExMzM3IiB5MT0iNCIgeDI9IjguNTkyMDEiIHkyPSIxNS40MzU1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjM0RDQkZGIi8+DQo8c3RvcCBvZmZzZXQ9IjAuMjQ2Njc0IiBzdG9wLWNvbG9yPSIjMDU4OEY3IiBzdG9wLW9wYWNpdHk9IjAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50NF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxOS4wODYxIDcuNDUxMikgcm90YXRlKDEwOS44ODEpIHNjYWxlKDE1LjI0NTEgMTguNzQ0NikiPg0KPHN0b3Agb2Zmc2V0PSIwLjA2NjE3MTQiIHN0b3AtY29sb3I9IiM4QzQ4RkYiLz4NCjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjRjI1OThBIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODk1ODMzIiBzdG9wLWNvbG9yPSIjRkZCMTUyIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSIxOS42MDQ1IiB5MT0iNy44NzI0NyIgeDI9IjE5LjU5ODIiIHkyPSIxMC45ODU3IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDU4MTUzNSIgc3RvcC1jb2xvcj0iI0Y4QURGQSIvPg0KPHN0b3Agb2Zmc2V0PSIwLjcwODA2MyIgc3RvcC1jb2xvcj0iI0E4NkVERCIgc3RvcC1vcGFjaXR5PSIwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPC9kZWZzPg0KPC9zdmc+DQo=" alt="">Open Copilot</a><a class="btn" href="https://claude.ai/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="">Open Claude</a></div>
-</section>
-
-<section class="card">
-<h2><span class="step">3</span>Paste the AI response here</h2>
-<label for="aiResponse">AI-generated response</label>
-<textarea id="aiResponse" rows="14" placeholder="Paste the AI-generated JSON response here."></textarea>
-<div class="actions"><button class="primary" onclick="buildResource()"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create objectives and criteria</button><button class="secondary" onclick="loadExample()">Load example data</button><button class="danger" onclick="document.getElementById('aiResponse').value='';setStatus('','')">Clear pasted response</button></div>
-<div id="status" class="status"></div>
-</section>
+<div id="status" class="status hidden" aria-live="polite"></div>
+<div id="promptBox" hidden aria-hidden="true"><textarea id="prompt" readonly></textarea></div>
+<textarea id="aiResponse" hidden aria-hidden="true"></textarea>
 
 <section class="card hidden" id="downloadBox">
 <h2><span class="step">4</span>Preview and download</h2>
@@ -211,12 +201,7 @@ Before returning, silently check:
 2. The top-level property is exactly "objectiveSet".
 3. There are exactly ${objectiveCount} objectives.
 4. Each objective has ${criteriaCount} success criteria.
-5. There is no markdown, no code fence, no comments and no text outside the JSON.`;
- document.getElementById('prompt').value=prompt;
- document.getElementById('promptBox').classList.remove('hidden');
- setStatus('Prompt generated. Copy it into ChatGPT, Copilot or Claude, then paste the JSON response below.','ok');
- document.getElementById('promptBox').scrollIntoView({behavior:'smooth'});
-}
+5. There is no markdown, no code fence, no comments and no text outside the JSON.`;return prompt;}
 
 function copyText(id){const el=document.getElementById(id);el.select();navigator.clipboard.writeText(el.value).then(()=>setStatus('Copied to clipboard.','ok')).catch(()=>setStatus('Copy failed. The text is selected so you can copy manually.','bad'))}
 
@@ -507,134 +492,62 @@ function loadExample(){
  document.getElementById('aiResponse').value=JSON.stringify({objectiveSet:{title:'Objectives and Success Criteria',subject:'Physics',yearGroup:'Year 10',topic:'Energy resources',lessonTitle:'How useful are renewable energy resources?',demand:'Standard',priorLearningLink:'Pupils have previously learned about energy stores, transfers and how electricity can be generated.',learningObjectives:[{objective:'Compare renewable and non-renewable energy resources using relevant evidence.',successCriteria:['I can identify examples of renewable and non-renewable resources.','I can compare reliability, cost and environmental impact.']},{objective:'Explain advantages and disadvantages of different energy resources.',successCriteria:['I can describe at least one advantage and one limitation of key resources.','I can use accurate scientific vocabulary such as reliability, emissions and sustainability.']},{objective:'Justify a reasoned opinion about which energy resource is most suitable in a given context.',successCriteria:['I can choose evidence that supports my judgement.','I can explain why the best option may depend on location, demand and environmental impact.']}],assessmentNote:'Look for pupils moving beyond simple lists of pros and cons towards comparative and evidence-based explanations.',challengeExtension:'Evaluate whether nuclear power should be classed as a low-carbon solution for the UK.',teacherNotes:'Use these objectives to keep the lesson focused on comparison and justified evaluation rather than recall alone.'}},null,2);
  buildResource();
 }
-</script>
 
-<script id="hutton-refine-module">
-(function(){
- function initHuttonRefinement(){
-  if(document.getElementById('huttonRefinePanel'))return;
-  const response=document.getElementById('aiResponse')||document.getElementById('aiProduct')||document.getElementById('vocab-response-input');
-  if(!response)return;
-  const source=response.closest('.card,section')||response.parentElement;
-  if(!source)return;
-  let actions=source.querySelector('.actions,.btn-row');
-  if(!actions){actions=document.createElement('div');actions.className='actions';source.appendChild(actions)}
-  const compact=actions.classList.contains('btn-row');
-  const launch=document.createElement('button');
-  launch.type='button';
-  launch.className=compact?'btn':'secondary';
-  launch.innerHTML='<img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Refine with AI';
-  actions.appendChild(launch);
-  const copyResource=document.createElement('button');
-  copyResource.type='button';
-  copyResource.className=compact?'btn':'secondary';
-  copyResource.innerHTML='<svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>Copy to clipboard';
-  actions.appendChild(copyResource);
-  const restore=document.createElement('button');
-  restore.type='button';
-  restore.className=compact?'btn':'secondary';
-  restore.innerHTML='Restore previous response';
-  restore.hidden=true;
-  actions.appendChild(restore);
-
-  const panel=document.createElement(source.tagName==='SECTION'?'section':'div');
-  panel.id='huttonRefinePanel';
-  panel.className='card hutton-refine-panel';
-  panel.hidden=true;
-  panel.innerHTML='<h2>Refine with AI</h2><p class="hutton-refine-intro">Choose a common improvement, add your own instructions, or use both. The utility will create a follow-up prompt using the response already pasted above.</p><div class="hutton-refine-grid"><div><label for="huttonRefineType">Suggested refinement</label><select id="huttonRefineType"><option value="" selected>Choose a refinement (optional)</option><option>Make the resource more challenging</option><option>Make the resource more accessible</option><option>Make the instructions clearer and shorter</option><option>Reduce the amount of text</option><option>Improve subject accuracy and precision</option><option>Use stronger or more relevant examples</option><option>Strengthen support and scaffolding</option><option>Strengthen challenge and extension</option><option>Improve questions, answers or feedback</option><option>Adapt it for a different lesson time</option><option>Reduce printing, cutting or preparation</option><option>Try a different format or approach</option></select></div><div><label for="huttonRefineNotes">What would you like to change?</label><textarea id="huttonRefineNotes" rows="5" placeholder="e.g. Make question 3 more demanding, shorten the teacher notes and keep everything else unchanged."></textarea></div></div><p class="hutton-refine-hint">Manual edits made directly in a preview are not included automatically. Describe any such changes here.</p><div class="hutton-refine-actions"><button type="button" id="huttonMakeRefinePrompt"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create refinement prompt</button></div><div id="huttonRefinePromptBox" hidden><label for="huttonRefinePrompt">Follow-up prompt</label><textarea id="huttonRefinePrompt" rows="12" readonly></textarea><div class="hutton-refine-actions" id="huttonRefinePromptActions"><button type="button" id="huttonCopyRefinePrompt"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>Copy refinement prompt</button></div><p class="hutton-refine-hint">Paste the revised code over the previous AI response, then use the utility\'s existing create or format button again.</p></div><div id="huttonRefineMessage" aria-live="polite"></div>';
-  source.insertAdjacentElement('afterend',panel);
-
-  const style=document.createElement('style');
-  style.textContent='.hutton-refine-panel[hidden]{display:none!important}.hutton-refine-panel{margin-top:18px}.hutton-refine-panel h2{margin-top:0}.hutton-refine-intro{padding:10px 12px;border-left:4px solid #2f855a;background:#edf8f1}.hutton-refine-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.hutton-refine-grid label,.hutton-refine-panel>div>label{display:block;font-weight:700;margin-bottom:6px}.hutton-refine-grid select,.hutton-refine-grid textarea,#huttonRefinePrompt{width:100%;box-sizing:border-box}.hutton-refine-hint{font-size:.9rem;color:#5b677a}.hutton-refine-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.hutton-refine-actions button,.hutton-refine-actions a{display:inline-flex;align-items:center;gap:7px}.hutton-refine-actions button{background:#0b2348;color:#fff;border:1px solid #0b2348;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}.hutton-refine-actions a{background:#fff;color:#0b2348;border:1px solid #c8d4e3;border-radius:8px;padding:10px 14px;font-weight:700;text-decoration:none}.hutton-refine-panel .brand-icon{width:18px;height:18px;object-fit:contain;flex:0 0 auto}.hutton-refine-message-ok,.hutton-refine-message-bad{margin-top:10px;padding:9px 11px;border-radius:6px}.hutton-refine-message-ok{background:#edf8f1;color:#205c39}.hutton-refine-message-bad{background:#fff0f0;color:#8a2020}@media(max-width:760px){.hutton-refine-grid{grid-template-columns:1fr}}';
-  document.head.appendChild(style);
-
-  const message=panel.querySelector('#huttonRefineMessage');
-  let previousResponse=null;
-  function showMessage(text,bad){message.className=bad?'hutton-refine-message-bad':'hutton-refine-message-ok';message.textContent=text}
-  function rawCurrent(){return response.id==='aiProduct'?String(response.innerHTML||''):String(response.value||response.textContent||'')}
-  function writeRaw(value){if(response.id==='aiProduct')response.innerHTML=value;else if('value' in response)response.value=value;else response.textContent=value}
-  function currentCode(){
-   if(response.id==='aiProduct'){
-    const clone=response.cloneNode(true);
-    clone.querySelectorAll('img').forEach(img=>img.replaceWith('[Existing visual: '+(img.getAttribute('alt')||'image')+']'));
-    return clone.innerHTML.trim()||clone.textContent.trim();
-   }
-   return String(response.value||response.textContent||'').trim();
+const OBJECTIVES_SUCCESS_CRITERIA_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["objectiveSet"],
+  properties: {
+    objectiveSet: {
+      type: "object",
+      additionalProperties: false,
+      required: ["title", "subject", "yearGroup", "topic", "lessonTitle", "demand", "priorLearningLink", "learningObjectives", "assessmentNote", "challengeExtension", "teacherNotes"],
+      properties: {
+        title: { type: "string" },
+        subject: { type: "string" },
+        yearGroup: { type: "string" },
+        topic: { type: "string" },
+        lessonTitle: { type: "string" },
+        demand: { type: "string" },
+        priorLearningLink: { type: "string" },
+        learningObjectives: { type: "array", items: { type: "object", additionalProperties: false, required: ["objective", "successCriteria"], properties: { objective: { type: "string" }, successCriteria: { type: "array", items: { type: "string" } } } } },
+        assessmentNote: { type: "string" },
+        challengeExtension: { type: "string" },
+        teacherNotes: { type: "string" }
+      }
+    }
   }
-  function titleCase(key){return String(key||'').replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}
-  function flattenValue(value,depth){
-   if(value===null||value===undefined||value==='')return '';
-   if(typeof value!=='object')return String(value);
-   if(Array.isArray(value))return value.map(item=>typeof item==='object'?flattenValue(item,depth+1):'- '+String(item)).filter(Boolean).join('\n');
-   return Object.keys(value).map(key=>{const body=flattenValue(value[key],depth+1);if(!body)return '';return titleCase(key)+'\n'+body}).filter(Boolean).join('\n\n');
-  }
-  function normaliseCopiedText(text){const blocked=/^(Utilities Hub|Top|Print \/ Save PDF|Open in new tab|Download(?: final)? (?:HTML|Word-compatible file|PowerPoint)|Refine with AI|Copy to clipboard)$/i;return String(text||'').replace(/\r\n?/g,'\n').split('\n').map(line=>line.replace(/[ \t]+/g,' ').trim()).filter(line=>line&&!blocked.test(line)).join('\n').replace(/\n{3,}/g,'\n\n').trim()}
-  function cleanResourceText(){
-   const frame=document.getElementById('preview');
-   try{if(frame&&frame.contentDocument&&frame.contentDocument.body){const clone=frame.contentDocument.body.cloneNode(true);clone.querySelectorAll('script,style,button,.actions,.hutton-floating-nav,.utility-copyright,footer').forEach(el=>el.remove());const text=normaliseCopiedText(clone.innerText||clone.textContent);if(text)return text}}catch(e){}
-   if(response.id==='aiProduct'){const clone=response.cloneNode(true);clone.querySelectorAll('script,style,button').forEach(el=>el.remove());clone.querySelectorAll('img').forEach(img=>img.replaceWith(img.getAttribute('alt')?'['+img.getAttribute('alt')+']':''));return normaliseCopiedText(clone.innerText||clone.textContent)}
-   const raw=rawCurrent().trim();if(!raw)return '';
-   const stripped=raw.replace(/^\s*```(?:json|html|latex|tex)?\s*/i,'').replace(/\s*```\s*$/,'').trim();
-   try{return normaliseCopiedText(flattenValue(JSON.parse(stripped),0))}catch(e){}
-   if(/<[^>]+>/.test(stripped)){const temp=document.createElement('div');temp.innerHTML=stripped;temp.querySelectorAll('script,style,button').forEach(el=>el.remove());return normaliseCopiedText(temp.innerText||temp.textContent)}
-   return normaliseCopiedText(stripped);
-  }
-  function copyPlainText(text,onSuccess){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(onSuccess).catch(()=>fallbackCopy(text,onSuccess));return}fallbackCopy(text,onSuccess)}
-  function fallbackCopy(text,onSuccess){const box=document.createElement('textarea');box.value=text;box.setAttribute('readonly','');box.style.position='fixed';box.style.opacity='0';document.body.appendChild(box);box.select();try{document.execCommand('copy');onSuccess()}catch(e){panel.hidden=false;showMessage('Copy failed. Please select and copy the generated text manually.',true)}box.remove()}
-  function iconSource(kind){
-   const selectors=kind==='chatgpt'?['a[href*="chatgpt.com"] img','a[href*="chat.openai.com"] img','button[onclick*="chat.openai.com"] img','button[onclick*="chatgpt.com"] img']:kind==='copilot'?['a[href*="copilot.microsoft.com"] img','button[onclick*="copilot.microsoft.com"] img']:['a[href*="claude.ai"] img','button[onclick*="claude.ai"] img'];
-   for(const selector of selectors){const img=document.querySelector(selector);if(img)return img.getAttribute('src')||img.src||''}
-   return '';
-  }
-  function addAILink(label,href,kind){const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener';const src=iconSource(kind);if(src){const img=document.createElement('img');img.className='brand-icon';img.src=src;img.alt='';a.appendChild(img)}a.appendChild(document.createTextNode(label));panel.querySelector('#huttonRefinePromptActions').appendChild(a)}
-  addAILink('Open ChatGPT','https://chatgpt.com/','chatgpt');
-  addAILink('Open Copilot','https://copilot.microsoft.com/','copilot');
-  addAILink('Open Claude','https://claude.ai/','claude');
+};
 
-  launch.addEventListener('click',function(){panel.hidden=false;const code=currentCode();if(code){previousResponse=rawCurrent();restore.hidden=true}else showMessage('Paste and create the initial AI response before generating a refinement prompt.',true);panel.scrollIntoView({behavior:'smooth',block:'start'})});
-  response.addEventListener('input',function(){if(previousResponse!==null&&rawCurrent()!==previousResponse)restore.hidden=false});
-  restore.addEventListener('click',function(){if(previousResponse===null)return;const current=rawCurrent(),older=previousResponse;writeRaw(older);previousResponse=current;restore.hidden=false;const old=restore.textContent;restore.textContent='Response restored';setTimeout(()=>restore.textContent=old,1600);response.scrollIntoView({behavior:'smooth',block:'center'})});
-  copyResource.addEventListener('click',function(){const text=cleanResourceText();if(!text){panel.hidden=false;showMessage('Create the resource before copying it to the clipboard.',true);panel.scrollIntoView({behavior:'smooth',block:'start'});return}const original=copyResource.innerHTML;copyPlainText(text,function(){copyResource.textContent='Copied';setTimeout(()=>copyResource.innerHTML=original,1600)})});
-  panel.querySelector('#huttonMakeRefinePrompt').addEventListener('click',function(){
-   const code=currentCode(),type=panel.querySelector('#huttonRefineType').value.trim(),notes=panel.querySelector('#huttonRefineNotes').value.trim();
-   if(!code){showMessage('Paste the initial AI response above before refining it.',true);return}
-   if(!type&&!notes){showMessage('Choose a suggested refinement or describe what you would like to change.',true);return}
-   const title=(document.querySelector('header h1,h1')||{}).textContent||document.title||'Hutton AI utility';
-   const prompt='You are revising an existing AI response for the Hutton utility "'+title.trim()+'".\n\nReturn only the complete revised code or response in the same format and structure as the current version. Do not include an introduction, explanation, markdown commentary or a code fence unless the current response itself requires one.\n\nRequested refinement from the teacher:\nSuggested refinement: '+(type||'No dropdown option selected.')+'\nTeacher\'s specific instructions: '+(notes||'No additional instructions provided.')+'\n\nRevision rules:\n- Apply the requested changes carefully and meaningfully.\n- Preserve every detail the teacher has not asked to change.\n- Return the complete revised response, not only the changed section.\n- Keep the same wrapper, field names, structure and output type as the current response.\n- Keep subject content accurate, age-appropriate and internally consistent.\n- Preserve working links, formatting instructions and required fields.\n- Before returning, silently check that the result can be pasted back into the same utility.\n\nCURRENT CODE OR RESPONSE TO REVISE:\n--- START CURRENT CODE ---\n'+code+'\n--- END CURRENT CODE ---';
-   panel.querySelector('#huttonRefinePrompt').value=prompt;
-   panel.querySelector('#huttonRefinePromptBox').hidden=false;
-   showMessage('Refinement prompt created. Copy it into your AI assistant, then paste the revised code over the previous AI response.',false);
-   panel.querySelector('#huttonRefinePromptBox').scrollIntoView({behavior:'smooth',block:'start'});
+function validatePremiumForm(){
+  if(!val('topic')&&!val('lessonTitle')) return 'Please enter a topic or lesson title before generating objectives and success criteria.';
+  return '';
+}
+
+function initPremiumGeneration(){
+  const btn=document.getElementById('generateResourceBtn');
+  if(!btn||!window.HuttonPremiumAPI)return;
+  btn.addEventListener('click',function(){
+    HuttonPremiumAPI.generateResource({
+      button:'generateResourceBtn',
+      status:'status',
+      schemaName:'teacher_ai_hub_objectives_success_criteria',
+      schema:OBJECTIVES_SUCCESS_CRITERIA_SCHEMA,
+      validate:validatePremiumForm,
+      buildPrompt:makePrompt,
+      onSuccess:async function(json){
+        document.getElementById('aiResponse').value=JSON.stringify(json); buildResource();
+      },
+      systemMessage:'You generate clear UK secondary school learning objectives and success criteria from teacher lesson notes. Return only JSON that matches the supplied schema.',
+      loadingMessage:'Generating objectives and success criteria...',
+      successMessage:'Objectives and success criteria created successfully.',
+      failurePrefix:'Automatic generation failed'
+    });
   });
-  panel.querySelector('#huttonCopyRefinePrompt').addEventListener('click',function(){const box=panel.querySelector('#huttonRefinePrompt');box.select();const copied=()=>showMessage('Refinement prompt copied.',false);if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(box.value).then(copied).catch(()=>showMessage('Copy failed. The prompt is selected so you can copy it manually.',true));else{try{document.execCommand('copy');copied()}catch(e){showMessage('Copy failed. The prompt is selected so you can copy it manually.',true)}}});
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHuttonRefinement);else initHuttonRefinement();
-})();
-</script>
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumGeneration);else initPremiumGeneration();
 
-<script id="hutton-auto-create-after-paste">
-(function(){
- function init(){
-  const response=document.getElementById('aiResponse');
-  if(!response||typeof buildResource!=='function'||typeof extractJSON!=='function')return;
-  let timer=null;
-  response.addEventListener('paste',function(){
-   clearTimeout(timer);
-   timer=setTimeout(function(){
-    const text=response.value.trim();
-    if(!text)return;
-    try{extractJSON(text)}catch(e){return}
-    buildResource();
-   },500);
-  });
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
 </script>
 
 </body>
 </html>
-
-
-
-
