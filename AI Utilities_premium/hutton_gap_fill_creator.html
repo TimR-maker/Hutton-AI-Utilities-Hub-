@@ -100,6 +100,7 @@ function getSavedLessonContext(){try{return JSON.parse(localStorage.getItem('hut
 function setSelectIfPossible(id,value){const el=document.getElementById(id),wanted=String(value||'').trim();if(!el||!wanted)return false;const options=[...el.options];let match=options.find(o=>o.value===wanted||o.textContent===wanted||o.textContent.indexOf(wanted)===0||wanted.indexOf(o.textContent)===0);if(!match&&String(id).toLowerCase()==='keystage'){const stage=(wanted.toUpperCase().match(/\bKS[345]\b/)||[])[0];if(stage)match=options.find(o=>String(o.value||o.textContent||'').toUpperCase().includes(stage))}if(!match)return false;el.value=match.value;return true}
 function stripFences(s){return String(s||'').trim().replace(new RegExp('^\\x60{3}(?:json)?\\s*','i'),'').replace(new RegExp('\\x60{3}$'),'').trim()}
 function balancedJSONObjects(s){const out=[];for(let i=0;i<s.length;i++){if(s[i]!=='{')continue;let depth=0,inStr=false,esc=false;for(let j=i;j<s.length;j++){const ch=s[j];if(inStr){if(esc)esc=false;else if(ch==='\\')esc=true;else if(ch==='"')inStr=false;continue}if(ch==='"'){inStr=true;continue}if(ch==='{')depth++;if(ch==='}'){depth--;if(depth===0){out.push(s.slice(i,j+1));break}}}}return out}
+function escapeRegExp(s){return String(s||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
 function slug(s){const clean=String(s||'gap-fill').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');return clean.slice(0,42).replace(/-+$/,'')||'gap-fill'}
 function openBoard(){if(!boardHTML)return;const w=window.open('','_blank');w.document.open();w.document.write(boardHTML);w.document.close()}
 function applySavedLessonContext(){const ctx=getSavedLessonContext();if(!ctx||!Object.keys(ctx).length){setStatus('No saved lesson context found. Set it on the Hub first.','bad');return}let applied=0;['subject','yearGroup','keyStage','examBoard','demand'].forEach(id=>{if(setSelectIfPossible(id,ctx[id]))applied++});if(ctx.topic){document.getElementById('topic').value=ctx.topic;applied++}const focus=String(ctx.lessonFocus||ctx.topic||'').trim();if(focus){document.getElementById('lessonFocus').value=focus;applied++}if(ctx.notes&&!val('teacherNotes')){document.getElementById('teacherNotes').value=ctx.notes;applied++}setStatus(applied?'Saved lesson context applied. Check the gap-fill options, then generate the prompt.':'Saved lesson context found, but no matching fields could be applied.','ok')}
@@ -162,7 +163,43 @@ Use this exact schema:
 Before returning, silently verify the gap count, unique IDs, one marker per gap, suitable word count, factual accuracy and valid JSON.`;return prompt}
 function gapExtractJSON(text){const cleaned=stripFences(text),found=[];try{return JSON.parse(cleaned)}catch(e){}for(const candidate of balancedJSONObjects(cleaned)){try{const value=JSON.parse(candidate.replace(/,\s*([}\]])/g,'$1')),d=value.gapFill||value.gap_fill||value;let score=candidate.length/10000;if(value.gapFill||value.gap_fill)score+=20;if(d&&d.passage&&d.gaps)score+=12;found.push({value,score})}catch(e){}}if(found.length){found.sort((a,b)=>b.score-a.score);return found[0].value}throw new Error('No valid gapFill JSON found.')}
 function extractJSON(text){return gapExtractJSON(text)}
-function gapNormalise(data){const d=data.gapFill||data.gap_fill||data;if(!d||typeof d!=='object')throw new Error('No gapFill object found.');d.title=String(d.title||((d.topic||val('topic')||'Topic')+' Gap-fill'));d.subject=String(d.subject||val('subject'));d.yearGroup=String(d.yearGroup||d.year_group||val('yearGroup'));d.keyStage=String(d.keyStage||d.key_stage||val('keyStage'));d.topic=String(d.topic||val('topic'));d.taskQuestion=String(d.taskQuestion||d.task_question||d.instructions||'Complete the passage using the word cards.');d.passage=String(d.passage||d.text||d.gapText||d.gap_text||'');d.suggestedTime=String(d.suggestedTime||d.suggested_time||val('activityTime'));d.interactionStyle=String(d.interactionStyle||d.interaction_style||val('cardCount'));d.gaps=arr(d.gaps||d.answers).map((x,i)=>{x=x&&typeof x==='object'?x:{answer:String(x||'')};return{id:String(x.id||x.gapId||x.gap_id||'g'+(i+1)).replace(/[\[\]{}]/g,''),answer:String(x.answer||x.word||x.text||''),explanation:String(x.explanation||x.feedback||x.reason||'')}});d.distractors=arr(d.distractors||d.extraWords||d.extra_words).map(String).filter(Boolean);d.debriefQuestions=arr(d.debriefQuestions||d.debrief_questions||d.questions).map(String);d.teacherNotes=String(d.teacherNotes||d.teacher_notes||'');if(!d.passage)throw new Error('No passage was found.');if(d.gaps.length<2)throw new Error('At least two gaps are required.');const ids=new Set();d.gaps.forEach((g,i)=>{if(!g.answer)throw new Error('Gap '+(i+1)+' has no answer.');if(ids.has(g.id))g.id='g'+(i+1);ids.add(g.id);const patterns=[new RegExp('\\[\\s*'+g.id+'\\s*\\]','gi'),new RegExp('\\{\\{\\s*'+g.id+'\\s*\\}\\}','gi'),new RegExp('\\[\\[\\s*'+g.id+'\\s*\\]\\]','gi')];let count=0;patterns.forEach(re=>{const m=d.passage.match(re);if(m)count+=m.length});if(count!==1)throw new Error('The passage must contain exactly one marker for '+g.id+'.')});return d}
+function gapNormalise(data){
+ const d=data.gapFill||data.gap_fill||data;
+ if(!d||typeof d!=='object')throw new Error('No gapFill object found.');
+ d.title=String(d.title||((d.topic||val('topic')||'Topic')+' Gap-fill'));
+ d.subject=String(d.subject||val('subject'));
+ d.yearGroup=String(d.yearGroup||d.year_group||val('yearGroup'));
+ d.keyStage=String(d.keyStage||d.key_stage||val('keyStage'));
+ d.topic=String(d.topic||val('topic'));
+ d.taskQuestion=String(d.taskQuestion||d.task_question||d.instructions||'Complete the passage using the word cards.');
+ d.passage=String(d.passage||d.text||d.gapText||d.gap_text||'');
+ d.suggestedTime=String(d.suggestedTime||d.suggested_time||val('activityTime'));
+ d.interactionStyle=String(d.interactionStyle||d.interaction_style||val('cardCount'));
+ d.gaps=arr(d.gaps||d.answers).map((x,i)=>{x=x&&typeof x==='object'?x:{answer:String(x||'')};return{id:String(x.id||x.gapId||x.gap_id||'g'+(i+1)).replace(/[\[\]{}]/g,''),answer:String(x.answer||x.word||x.text||''),explanation:String(x.explanation||x.feedback||x.reason||'')}});
+ d.distractors=arr(d.distractors||d.extraWords||d.extra_words).map(String).filter(Boolean);
+ d.debriefQuestions=arr(d.debriefQuestions||d.debrief_questions||d.questions).map(String);
+ d.teacherNotes=String(d.teacherNotes||d.teacher_notes||'');
+ if(!d.passage)throw new Error('No passage was found.');
+ if(d.gaps.length<2)throw new Error('At least two gaps are required.');
+ const hasMarker=(g)=>new RegExp('(?:\\[\\[?\\s*'+escapeRegExp(g.id)+'\\s*\\]\\]?|\\{\\{\\s*'+escapeRegExp(g.id)+'\\s*\\}\\})','i').test(d.passage);
+ const replaceFirst=(re,replacement)=>{let done=false;d.passage=d.passage.replace(re,(m)=>{if(done)return m;done=true;return typeof replacement==='function'?replacement(m):replacement});return done};
+ const ids=new Set();
+ d.gaps.forEach((g,i)=>{if(!g.answer)throw new Error('Gap '+(i+1)+' has no answer.');if(ids.has(g.id))g.id='g'+(i+1);ids.add(g.id)});
+ d.gaps.forEach((g,i)=>{
+  if(hasMarker(g))return;
+  const marker='['+g.id+']';
+  const blank=/_{3,}|\[\s*(?:blank|gap|answer)\s*\]|\(\s*(?:blank|gap|answer)\s*\)/i;
+  if(replaceFirst(blank,marker))return;
+  const answer=escapeRegExp(g.answer.trim()).replace(/\s+/g,'\\s+');
+  if(answer&&replaceFirst(new RegExp('(^|[^A-Za-z0-9])('+answer+')(?=$|[^A-Za-z0-9])','i'),(m)=>m.replace(new RegExp(answer,'i'),marker)))return;
+ });
+ d.gaps.forEach((g,i)=>{
+  const patterns=[new RegExp('\\[\\s*'+escapeRegExp(g.id)+'\\s*\\]','gi'),new RegExp('\\{\\{\\s*'+escapeRegExp(g.id)+'\\s*\\}\\}','gi'),new RegExp('\\[\\[\\s*'+escapeRegExp(g.id)+'\\s*\\]\\]','gi')];
+  let count=0;patterns.forEach(re=>{const m=d.passage.match(re);if(m)count+=m.length});
+  if(count!==1)throw new Error('The passage could not identify exactly one place for '+g.id+'. Ask the AI to return the same gap-fill again using [g1], [g2] markers in the passage.');
+ });
+ return d
+}
 function gapBadgeData(){const img=document.querySelector('.school-badge');return img?(img.getAttribute('src')||''):''}
 function gapPassageHTML(d,answers){let text=escapeHTML(d.passage);d.gaps.forEach((g,i)=>{const re=new RegExp('(?:\\[\\[?\\s*'+g.id+'\\s*\\]\\]?|\\{\\{\\s*'+g.id+'\\s*\\}\\})','gi'),label=answers?escapeHTML(g.answer):'Gap '+(i+1);text=text.replace(re,'<button type="button" class="gap" data-gap="'+escapeHTML(g.id)+'" aria-label="Gap '+(i+1)+'">'+label+'</button>')});return text.replace(/\n\s*\n/g,'</p><p>').replace(/\n/g,'<br>')}
 function renderGapBoard(d){const payload=JSON.stringify(d).replace(/</g,'\\u003c');return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(d.title)}</title><style>
