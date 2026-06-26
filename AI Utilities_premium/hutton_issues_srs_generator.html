@@ -68,8 +68,9 @@ background:#0b2348;color:#fff;cursor:pointer}
 </div>
 <div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" type="button" id="generateResourceBtn">Generate Issues SRS</button></div>
 </section>
-<section class="card hidden" id="promptBox" aria-hidden="true"><textarea id="prompt" readonly></textarea></section>
-<section class="card"><h2><span class="step">2</span>Automatic generation</h2><p class="warning ok">Complete the lesson details, then generate the discussion issues and balanced evaluation slides automatically.</p><textarea id="aiResponse" class="hidden" aria-hidden="true"></textarea><div id="status" class="status hidden" aria-live="polite"></div></section>
+<div id="promptBox" hidden aria-hidden="true"><textarea id="prompt" readonly></textarea></div>
+<textarea id="aiResponse" hidden aria-hidden="true"></textarea>
+<div id="status" class="status hidden" aria-live="polite"></div>
 <section class="card hidden" id="downloadBox"><h2><span class="step">4</span>Preview and download</h2><div class="actions"><button class="primary" onclick="downloadDeck()"><img class="brand-icon" src="microsoft_edge_logo_2019.png" alt="">Download interactive board HTML</button><button class="secondary" onclick="downloadPowerPoint()"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=powerpoint.cloud.microsoft&sz=64" alt="">Download PowerPoint-compatible file (.pptx)</button><button class="secondary" onclick="openDeck()">Open interactive board</button></div><p class="hint">You can edit text directly in the preview before downloading. The final downloaded presentation is non-editable and supports click, keyboard arrows, mouse wheel and touch swipe.</p><iframe id="preview" class="previewFrame"></iframe></section>
 <footer>Designed for student opinion gathering using colour-card responses and balanced classroom discussion.</footer>
 <footer class="utility-copyright" style="font-size:11px;color:#666;text-align:center;margin:20px auto 0;padding-top:10px;border-top:1px solid #ddd;max-width:1100px;">
