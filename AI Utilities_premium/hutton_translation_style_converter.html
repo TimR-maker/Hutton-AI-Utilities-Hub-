@@ -12,6 +12,7 @@ The copyright and intellectual property rights in this software remain the prope
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hutton Grammar School Translation & Style Converter</title>
+<script src="shared/hutton-premium-api.js"></script>
 <style>
 :root{--navy:#0b2348;--navy2:#12315f;--line:#d8e2ee;--text:#132033;--muted:#607089;--focus:#315a98}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#f6f9fd,#eaf2fa);color:var(--text)}
@@ -303,26 +304,18 @@ background:#0b2348;color:#fff;cursor:pointer}
 <div class="full"><label>Teacher guidance</label><textarea id="guidance" rows="3" placeholder="Any key vocabulary to preserve, tone requirements, exam-board wording, cultural sensitivity notes, or pupil needs."></textarea></div>
   <div class="full"><label>Paste text to translate or convert</label><textarea id="sourceText" rows="10" placeholder="Paste the text here, or upload the document directly to the AI chat interface before using the generated prompt."></textarea></div>
 </div>
-<div class="warning status">For document uploads, upload the file directly to ChatGPT, Copilot or Claude first, then paste the generated prompt from this utility.</div>
+<div class="warning status">Paste the text you want to translate or restyle into the box above. For longer documents, paste the relevant extract or section.</div>
 <div class="actions">
   <button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button>
-  <button class="primary" onclick="makePrompt()">Generate AI prompt</button>
-  <button class="secondary" onclick="copyPrompt()"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>Copy prompt</button>
-  <a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="">Open ChatGPT</a>
-  <a class="btn" href="https://copilot.microsoft.com/" target="_blank" rel="noopener"><img class="brand-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xNi4xNDM3IDUuMzQ5MzJDMTUuOTEwMSA0LjU0OTY2IDE1LjE3NyA0IDE0LjM0MzkgNEwxMy43NDI3IDRDMTIuODQ2NyA0IDEyLjA3NTggNC42MzQgMTEuOTAzIDUuNTEzMjFMMTAuODUzNSAxMC44NTAxTDExLjE1MDkgOS44OTEwMkMxMS4zOTQzIDkuMTA2MyAxMi4xMjAyIDguNTcxNDMgMTIuOTQxOCA4LjU3MTQzTDE2LjIzNTEgOC41NzE0M0wxNy42MzUyIDkuNzQzNDdMMTguODgxOCA4LjU3MTQzSDE4LjQ5MDVDMTcuNjU3NCA4LjU3MTQzIDE2LjkyNDIgOC4wMjE3NyAxNi42OTA3IDcuMjIyMTFMMTYuMTQzNyA1LjM0OTMyWiIgZmlsbD0idXJsKCNwYWludDBfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOC4wNDkyIDE4LjY0NDdDOC4yODAxNyAxOS40NDgyIDkuMDE1MTkgMjAuMDAxNyA5Ljg1MTIxIDIwLjAwMTdIMTEuMDc1QzEyLjA4NDQgMjAuMDAxNyAxMi45MTI2IDE5LjIwMjUgMTIuOTQ4OCAxOC4xOTM4TDEzLjEyOTUgMTMuMTQ0NUwxMi44NDIgMTQuMDk3MUMxMi42MDMxIDE0Ljg4ODYgMTEuODczOCAxNS40MzAyIDExLjA0NyAxNS40MzAyTDcuNzMzODMgMTUuNDMwMkw2LjM0OTU5IDE0LjU0NTFMNS4zMjgxMiAxNS40MzAySDUuNzEzMjRDNi41NDkyNiAxNS40MzAyIDcuMjg0MjcgMTUuOTgzNyA3LjUxNTI0IDE2Ljc4NzJMOC4wNDkyIDE4LjY0NDdaIiBmaWxsPSJ1cmwoI3BhaW50MV9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50Ml9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50M19saW5lYXJfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik05Ljc0OTAyIDIwLjAwMDZIMTYuMzExNUMxOC4xODY1IDIwLjAwMDYgMTkuMzExNCAxNy42MDM5IDIwLjA2MTQgMTUuMjA3M0MyMC45NSAxMi4zNjc4IDIyLjExMjcgOC41NzAzMSAxOC43NDg5IDguNTcwMzFIMTUuODg3N0MxNS4wNTU3IDguNTcwMzEgMTQuMzIzOCA5LjExNjU3IDE0LjA4OCA5LjkxNDQ0QzEzLjU5NDYgMTEuNTgzOSAxMi43MzQzIDE0LjQ4MSAxMi4wNTgyIDE2LjY4OEMxMS43MTM2IDE3LjgxMyAxMS40MjY1IDE4Ljc3OTIgMTAuOTg1OSAxOS4zODA4QzEwLjczODkgMTkuNzE4MSAxMC4zMjczIDIwLjAwMDYgOS43NDkwMiAyMC4wMDA2WiIgZmlsbD0idXJsKCNwYWludDRfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOS43NDkwMiAyMC4wMDA2SDE2LjMxMTVDMTguMTg2NSAyMC4wMDA2IDE5LjMxMTQgMTcuNjAzOSAyMC4wNjE0IDE1LjIwNzNDMjAuOTUgMTIuMzY3OCAyMi4xMTI3IDguNTcwMzEgMTguNzQ4OSA4LjU3MDMxSDE1Ljg4NzdDMTUuMDU1NyA4LjU3MDMxIDE0LjMyMzggOS4xMTY1NyAxNC4wODggOS45MTQ0NEMxMy41OTQ2IDExLjU4MzkgMTIuNzM0MyAxNC40ODEgMTIuMDU4MiAxNi42ODhDMTEuNzEzNiAxNy44MTMgMTEuNDI2NSAxOC43NzkyIDEwLjk4NTkgMTkuMzgwOEMxMC43Mzg5IDE5LjcxODEgMTAuMzI3MyAyMC4wMDA2IDkuNzQ5MDIgMjAuMDAwNloiIGZpbGw9InVybCgjcGFpbnQ1X2xpbmVhcl8xNDQ5XzYxNTA5KSIvPg0KPGRlZnM+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50MF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxNy43MTI4IDEwLjg5NDgpIHJvdGF0ZSgtMTI5LjE0MSkgc2NhbGUoNy4yMDc1MSA2Ljc2OTUzKSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDk1NTc1OCIgc3RvcC1jb2xvcj0iIzAwQUVGRiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjc3MzE4NSIgc3RvcC1jb2xvcj0iIzIyNTNDRSIvPg0KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDczNkM0Ii8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDFfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi43NDM0NyAxNS40MDI0KSByb3RhdGUoNTEuNzMyOCkgc2NhbGUoNi41ODY0NyA2LjM5NDgzKSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjRkZCNjU3Ii8+DQo8c3RvcCBvZmZzZXQ9IjAuNjMzNzI4IiBzdG9wLWNvbG9yPSIjRkY1RjNEIi8+DQo8c3RvcCBvZmZzZXQ9IjAuOTIzMzkyIiBzdG9wLWNvbG9yPSIjQzAyQjNDIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDJfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNy41MjUyMiAxNS40MzAxKSByb3RhdGUoLTkzLjM1ODUpIHNjYWxlKDEwLjE0ODcgNTguOTA1KSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDMiIHN0b3AtY29sb3I9IiNGRkM4MDAiLz4NCjxzdG9wIG9mZnNldD0iMC4zMSIgc3RvcC1jb2xvcj0iIzk4QkQ0MiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjQ5IiBzdG9wLWNvbG9yPSIjNTJCNDcxIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODQzODM4IiBzdG9wLWNvbG9yPSIjMEQ5MUUxIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSI4LjExMzM3IiB5MT0iNCIgeDI9IjguNTkyMDEiIHkyPSIxNS40MzU1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjM0RDQkZGIi8+DQo8c3RvcCBvZmZzZXQ9IjAuMjQ2Njc0IiBzdG9wLWNvbG9yPSIjMDU4OEY3IiBzdG9wLW9wYWNpdHk9IjAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50NF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxOS4wODYxIDcuNDUxMikgcm90YXRlKDEwOS44ODEpIHNjYWxlKDE1LjI0NTEgMTguNzQ0NikiPg0KPHN0b3Agb2Zmc2V0PSIwLjA2NjE3MTQiIHN0b3AtY29sb3I9IiM4QzQ4RkYiLz4NCjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjRjI1OThBIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODk1ODMzIiBzdG9wLWNvbG9yPSIjRkZCMTUyIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSIxOS42MDQ1IiB5MT0iNy44NzI0NyIgeDI9IjE5LjU5ODIiIHkyPSIxMC45ODU3IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDU4MTUzNSIgc3RvcC1jb2xvcj0iI0Y4QURGQSIvPg0KPHN0b3Agb2Zmc2V0PSIwLjcwODA2MyIgc3RvcC1jb2xvcj0iI0E4NkVERCIgc3RvcC1vcGFjaXR5PSIwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPC9kZWZzPg0KPC9zdmc+DQo=" alt="">Open Copilot</a>
-  <a class="btn" href="https://claude.ai/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="">Open Claude</a>
-</div>
-<textarea id="prompt" class="wide" placeholder="Your AI prompt will appear here."></textarea>
-</section>
-
-<section class="card">
-<h2><span class="step">2</span>Paste AI response</h2>
-<textarea id="aiResponse" rows="10" placeholder="Paste the full JSON response from the AI here." onpaste="autoPreviewAfterPaste()" oninput="autoPreviewAfterInput()"></textarea>
-<div class="actions">
-  <button class="secondary" onclick="loadExample()">Load example</button>
-  <button class="danger" onclick="clearAll()">Clear</button>
+  <button class="primary" id="generateResourceBtn" type="button"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create converted resource</button>
 </div>
 <div id="parseStatus" class="status"></div>
+<textarea id="prompt" class="wide hidden" aria-hidden="true" placeholder="Your AI prompt will appear here."></textarea>
+</section>
+
+<section class="card hidden" aria-hidden="true">
+<h2><span class="step">2</span>Stored AI response</h2>
+<textarea id="aiResponse" rows="10" placeholder="The generated JSON is stored here automatically." onpaste="autoPreviewAfterPaste()" oninput="autoPreviewAfterInput()"></textarea>
 </section>
 
 <section class="card" id="previewCard">
@@ -454,6 +447,7 @@ Source text:
 ${source}
 """`;
  document.getElementById('prompt').value=prompt;
+ return prompt;
 }
 
 async function copyPrompt(){
@@ -661,9 +655,10 @@ function applySavedLessonContext(){
  setStatus('Saved lesson context applied. Check the fields, then generate the prompt.','ok');
 }
 
-function buildPreview(){
+function premiumResult(source){if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);return source}
+function buildPreview(source){
  try{
-   currentResource=normalise(extractJSON(document.getElementById('aiResponse').value));
+   currentResource=normalise(premiumResult(source)||extractJSON(document.getElementById('aiResponse').value));
    currentTab='translated';
    document.querySelectorAll('.pill').forEach((p,i)=>p.classList.toggle('active',i===0));
    renderPreview();
@@ -748,6 +743,29 @@ function autoPreviewAfterInput(){
  clearTimeout(autoPreviewTimer);
  autoPreviewTimer=setTimeout(()=>{ if(document.getElementById('aiResponse').value.trim()) buildPreview(); },900);
 }
+
+const premiumTranslationSchema={type:'object',properties:{translationResource:{type:'object'}},required:['translationResource']};
+function validatePremiumForm(){if(!val('sourceText'))return 'Paste the text you want to translate or restyle first.';return ''}
+function initPremiumGeneration(){
+ const btn=document.getElementById('generateResourceBtn');
+ if(!btn||!window.HuttonPremiumAPI)return;
+ btn.addEventListener('click',function(){
+   HuttonPremiumAPI.generateResource({
+     button:'generateResourceBtn',
+     status:'parseStatus',
+     schemaName:'teacher_ai_hub_translation_style',
+     schema:premiumTranslationSchema,
+     validate:validatePremiumForm,
+     buildPrompt:makePrompt,
+     onSuccess:async function(json){document.getElementById('aiResponse').value=JSON.stringify(json);buildPreview(json)},
+     systemMessage:'You translate, simplify and restyle classroom text as valid JSON only.',
+     loadingMessage:'Creating converted resource...',
+     successMessage:'Converted resource created. You can edit directly in the preview window.',
+     failurePrefix:'Automatic generation failed'
+   });
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumGeneration);else initPremiumGeneration();
 
 updateMode();
 </script>
