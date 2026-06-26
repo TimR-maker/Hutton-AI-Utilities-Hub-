@@ -52,7 +52,7 @@ background:#0b2348;color:#fff;cursor:pointer}
 <p>Stage 1 creates a prompt for ChatGPT, Copilot or Claude. Stage 3 turns the AI’s structured output into an SRS discussion presentation.</p>
 </header>
 <main>
-<section class="card"><div class="tabs"><span class="pill">1. Build AI prompt</span><span class="pill">2. Paste AI response</span><span class="pill">3. Preview and download</span></div></section>
+<section class="card"><div class="tabs"><span class="pill">1. Describe the resource</span><span class="pill">2. Generate automatically</span><span class="pill">3. Preview and download</span></div></section>
 <section class="card">
 <h2><span class="step">1</span>Configure the issues SRS presentation</h2>
 <div class="grid">
@@ -66,10 +66,10 @@ background:#0b2348;color:#fff;cursor:pointer}
 
 <div class="full"><label for="guidance">Additional teacher guidance</label><textarea id="guidance" rows="3" placeholder="e.g. Avoid party politics; include stakeholders; make suitable for Year 10; link to AQA GCSE..."></textarea></div>
 </div>
-<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" onclick="makePrompt()">Generate AI prompt</button></div>
+<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" type="button" id="generateResourceBtn">Generate Issues SRS</button></div>
 </section>
-<section class="card hidden" id="promptBox"><h2><span class="step">2</span>Copy this into ChatGPT, Copilot or Claude</h2><p class="warning ok">Ask the AI to return only the JSON block. Then copy the AI response and paste it below.</p><textarea id="prompt" readonly></textarea><div class="actions"><button class="secondary" onclick="copyText('prompt')"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>Copy prompt</button><a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="">Open ChatGPT</a><a class="btn" href="https://copilot.microsoft.com/" target="_blank" rel="noopener"><img class="brand-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xNi4xNDM3IDUuMzQ5MzJDMTUuOTEwMSA0LjU0OTY2IDE1LjE3NyA0IDE0LjM0MzkgNEwxMy43NDI3IDRDMTIuODQ2NyA0IDEyLjA3NTggNC42MzQgMTEuOTAzIDUuNTEzMjFMMTAuODUzNSAxMC44NTAxTDExLjE1MDkgOS44OTEwMkMxMS4zOTQzIDkuMTA2MyAxMi4xMjAyIDguNTcxNDMgMTIuOTQxOCA4LjU3MTQzTDE2LjIzNTEgOC41NzE0M0wxNy42MzUyIDkuNzQzNDdMMTguODgxOCA4LjU3MTQzSDE4LjQ5MDVDMTcuNjU3NCA4LjU3MTQzIDE2LjkyNDIgOC4wMjE3NyAxNi42OTA3IDcuMjIyMTFMMTYuMTQzNyA1LjM0OTMyWiIgZmlsbD0idXJsKCNwYWludDBfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOC4wNDkyIDE4LjY0NDdDOC4yODAxNyAxOS40NDgyIDkuMDE1MTkgMjAuMDAxNyA5Ljg1MTIxIDIwLjAwMTdIMTEuMDc1QzEyLjA4NDQgMjAuMDAxNyAxMi45MTI2IDE5LjIwMjUgMTIuOTQ4OCAxOC4xOTM4TDEzLjEyOTUgMTMuMTQ0NUwxMi44NDIgMTQuMDk3MUMxMi42MDMxIDE0Ljg4ODYgMTEuODczOCAxNS40MzAyIDExLjA0NyAxNS40MzAyTDcuNzMzODMgMTUuNDMwMkw2LjM0OTU5IDE0LjU0NTFMNS4zMjgxMiAxNS40MzAySDUuNzEzMjRDNi41NDkyNiAxNS40MzAyIDcuMjg0MjcgMTUuOTgzNyA3LjUxNTI0IDE2Ljc4NzJMOC4wNDkyIDE4LjY0NDdaIiBmaWxsPSJ1cmwoI3BhaW50MV9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50Ml9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50M19saW5lYXJfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik05Ljc0OTAyIDIwLjAwMDZIMTYuMzExNUMxOC4xODY1IDIwLjAwMDYgMTkuMzExNCAxNy42MDM5IDIwLjA2MTQgMTUuMjA3M0MyMC45NSAxMi4zNjc4IDIyLjExMjcgOC41NzAzMSAxOC43NDg5IDguNTcwMzFIMTUuODg3N0MxNS4wNTU3IDguNTcwMzEgMTQuMzIzOCA5LjExNjU3IDE0LjA4OCA5LjkxNDQ0QzEzLjU5NDYgMTEuNTgzOSAxMi43MzQzIDE0LjQ4MSAxMi4wNTgyIDE2LjY4OEMxMS43MTM2IDE3LjgxMyAxMS40MjY1IDE4Ljc3OTIgMTAuOTg1OSAxOS4zODA4QzEwLjczODkgMTkuNzE4MSAxMC4zMjczIDIwLjAwMDYgOS43NDkwMiAyMC4wMDA2WiIgZmlsbD0idXJsKCNwYWludDRfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOS43NDkwMiAyMC4wMDA2SDE2LjMxMTVDMTguMTg2NSAyMC4wMDA2IDE5LjMxMTQgMTcuNjAzOSAyMC4wNjE0IDE1LjIwNzNDMjAuOTUgMTIuMzY3OCAyMi4xMTI3IDguNTcwMzEgMTguNzQ4OSA4LjU3MDMxSDE1Ljg4NzdDMTUuMDU1NyA4LjU3MDMxIDE0LjMyMzggOS4xMTY1NyAxNC4wODggOS45MTQ0NEMxMy41OTQ2IDExLjU4MzkgMTIuNzM0MyAxNC40ODEgMTIuMDU4MiAxNi42ODhDMTEuNzEzNiAxNy44MTMgMTEuNDI2NSAxOC43NzkyIDEwLjk4NTkgMTkuMzgwOEMxMC43Mzg5IDE5LjcxODEgMTAuMzI3MyAyMC4wMDA2IDkuNzQ5MDIgMjAuMDAwNloiIGZpbGw9InVybCgjcGFpbnQ1X2xpbmVhcl8xNDQ5XzYxNTA5KSIvPg0KPGRlZnM+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50MF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxNy43MTI4IDEwLjg5NDgpIHJvdGF0ZSgtMTI5LjE0MSkgc2NhbGUoNy4yMDc1MSA2Ljc2OTUzKSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDk1NTc1OCIgc3RvcC1jb2xvcj0iIzAwQUVGRiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjc3MzE4NSIgc3RvcC1jb2xvcj0iIzIyNTNDRSIvPg0KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDczNkM0Ii8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDFfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi43NDM0NyAxNS40MDI0KSByb3RhdGUoNTEuNzMyOCkgc2NhbGUoNi41ODY0NyA2LjM5NDgzKSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjRkZCNjU3Ii8+DQo8c3RvcCBvZmZzZXQ9IjAuNjMzNzI4IiBzdG9wLWNvbG9yPSIjRkY1RjNEIi8+DQo8c3RvcCBvZmZzZXQ9IjAuOTIzMzkyIiBzdG9wLWNvbG9yPSIjQzAyQjNDIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDJfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNy41MjUyMiAxNS40MzAxKSByb3RhdGUoLTkzLjM1ODUpIHNjYWxlKDEwLjE0ODcgNTguOTA1KSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDMiIHN0b3AtY29sb3I9IiNGRkM4MDAiLz4NCjxzdG9wIG9mZnNldD0iMC4zMSIgc3RvcC1jb2xvcj0iIzk4QkQ0MiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjQ5IiBzdG9wLWNvbG9yPSIjNTJCNDcxIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODQzODM4IiBzdG9wLWNvbG9yPSIjMEQ5MUUxIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSI4LjExMzM3IiB5MT0iNCIgeDI9IjguNTkyMDEiIHkyPSIxNS40MzU1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjM0RDQkZGIi8+DQo8c3RvcCBvZmZzZXQ9IjAuMjQ2Njc0IiBzdG9wLWNvbG9yPSIjMDU4OEY3IiBzdG9wLW9wYWNpdHk9IjAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50NF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxOS4wODYxIDcuNDUxMikgcm90YXRlKDEwOS44ODEpIHNjYWxlKDE1LjI0NTEgMTguNzQ0NikiPg0KPHN0b3Agb2Zmc2V0PSIwLjA2NjE3MTQiIHN0b3AtY29sb3I9IiM4QzQ4RkYiLz4NCjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjRjI1OThBIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODk1ODMzIiBzdG9wLWNvbG9yPSIjRkZCMTUyIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSIxOS42MDQ1IiB5MT0iNy44NzI0NyIgeDI9IjE5LjU5ODIiIHkyPSIxMC45ODU3IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDU4MTUzNSIgc3RvcC1jb2xvcj0iI0Y4QURGQSIvPg0KPHN0b3Agb2Zmc2V0PSIwLjcwODA2MyIgc3RvcC1jb2xvcj0iI0E4NkVERCIgc3RvcC1vcGFjaXR5PSIwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPC9kZWZzPg0KPC9zdmc+DQo=" alt="">Open Copilot</a><a class="btn" href="https://claude.ai/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="">Open Claude</a></div></section>
-<section class="card"><h2><span class="step">3</span>Paste the AI response here</h2><label for="aiResponse">AI-generated response</label><textarea id="aiResponse" rows="14" placeholder="Paste the full AI-generated JSON response here. The utility will extract the JSON automatically."></textarea><div class="actions"><button class="primary" onclick="buildDeck()"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create SRS presentation</button><button class="secondary" onclick="loadExample()">Load example data</button><button class="danger" onclick="document.getElementById('aiResponse').value='';setStatus('','')">Clear pasted response</button></div><div id="status" class="status"></div></section>
+<section class="card hidden" id="promptBox" aria-hidden="true"><textarea id="prompt" readonly></textarea></section>
+<section class="card"><h2><span class="step">2</span>Automatic generation</h2><p class="warning ok">Complete the lesson details, then generate the discussion issues and balanced evaluation slides automatically.</p><textarea id="aiResponse" class="hidden" aria-hidden="true"></textarea><div id="status" class="status hidden" aria-live="polite"></div></section>
 <section class="card hidden" id="downloadBox"><h2><span class="step">4</span>Preview and download</h2><div class="actions"><button class="primary" onclick="downloadDeck()"><img class="brand-icon" src="microsoft_edge_logo_2019.png" alt="">Download interactive board HTML</button><button class="secondary" onclick="downloadPowerPoint()"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=powerpoint.cloud.microsoft&sz=64" alt="">Download PowerPoint-compatible file (.pptx)</button><button class="secondary" onclick="openDeck()">Open interactive board</button></div><p class="hint">You can edit text directly in the preview before downloading. The final downloaded presentation is non-editable and supports click, keyboard arrows, mouse wheel and touch swipe.</p><iframe id="preview" class="previewFrame"></iframe></section>
 <footer>Designed for student opinion gathering using colour-card responses and balanced classroom discussion.</footer>
 <footer class="utility-copyright" style="font-size:11px;color:#666;text-align:center;margin:20px auto 0;padding-top:10px;border-top:1px solid #ddd;max-width:1100px;">
@@ -529,13 +529,145 @@ function loadExample(){document.getElementById('aiResponse').value=JSON.stringif
 (function(){function init(){const response=document.getElementById('aiResponse');if(!response||typeof buildDeck!=='function'||typeof extractJSON!=='function')return;let timer=null;response.addEventListener('paste',function(){clearTimeout(timer);timer=setTimeout(function(){const text=response.value.trim();if(!text)return;try{extractJSON(text)}catch(e){return}buildDeck()},500)})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();
 </script>
 
+
+<script src="shared/hutton-premium-api.js"></script>
+<script>
+const ISSUES_SRS_SCHEMA={
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "issuesSRS"
+ ],
+ "properties": {
+  "issuesSRS": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "title",
+    "subject",
+    "topic",
+    "keyStage",
+    "demand",
+    "issues"
+   ],
+   "properties": {
+    "title": {
+     "type": "string"
+    },
+    "subject": {
+     "type": "string"
+    },
+    "topic": {
+     "type": "string"
+    },
+    "keyStage": {
+     "type": "string"
+    },
+    "demand": {
+     "type": "string"
+    },
+    "issues": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "statement",
+       "context",
+       "discussionPrompt",
+       "balancedEvaluation"
+      ],
+      "properties": {
+       "statement": {
+        "type": "string"
+       },
+       "context": {
+        "type": "string"
+       },
+       "discussionPrompt": {
+        "type": "string"
+       },
+       "balancedEvaluation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "title",
+         "agreeArguments",
+         "disagreeArguments",
+         "stakeholders",
+         "discussionQuestions"
+        ],
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "agreeArguments": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "disagreeArguments": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "stakeholders": {
+          "type": "array",
+          "items": {
+           "type": "object",
+           "additionalProperties": false,
+           "required": [
+            "group",
+            "interest"
+           ],
+           "properties": {
+            "group": {
+             "type": "string"
+            },
+            "interest": {
+             "type": "string"
+            }
+           }
+          }
+         },
+         "discussionQuestions": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+};
+function premiumBuildPrompt(){
+ makePrompt();
+ const box=document.getElementById('promptBox');
+ if(box){box.classList.add('hidden');box.setAttribute('aria-hidden','true')}
+ return document.getElementById('prompt').value;
+}
+function initPremiumIssuesSrsSchema(){
+ const btn=document.getElementById('generateResourceBtn');
+ if(!btn||!window.HuttonPremiumAPI)return;
+ btn.addEventListener('click',function(){
+  HuttonPremiumAPI.generateResource({
+   button:btn,status:'status',schemaName:'teacher_ai_hub_issues_srs',schema:ISSUES_SRS_SCHEMA,
+   validate:function(){return !val('topic')?'Please enter a topic before generating the issues SRS resource.':''},
+   buildPrompt:premiumBuildPrompt,
+   onSuccess:function(json){document.getElementById('aiResponse').value=JSON.stringify(json);buildDeck()},
+   systemMessage:"You generate accurate, balanced and classroom-ready UK secondary issues SRS resources. Return only JSON matching the supplied schema.",
+   loadingMessage:"Generating issues SRS resource...",successMessage:"Issues SRS interactive board created successfully.",failurePrefix:'Automatic generation failed'
+  });
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumIssuesSrsSchema);else initPremiumIssuesSrsSchema();
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
