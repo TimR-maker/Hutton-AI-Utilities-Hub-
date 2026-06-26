@@ -148,9 +148,10 @@ function normaliseResponse(obj){
  const discussionPoints=Array.isArray(root.discussionPoints)?root.discussionPoints:(Array.isArray(root.discussion_points)?root.discussion_points:[]);
  return {question,possibleResponse,discussionPoints:discussionPoints.map(String).filter(Boolean).slice(0,3)};
 }
-function buildDeck(){
+function premiumResult(source){if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);return source}
+function buildDeck(source){
  try{
-  currentData=normaliseResponse(extractJSON(document.getElementById('aiResponse').value));
+  currentData=normaliseResponse(premiumResult(source)||extractJSON(document.getElementById('aiResponse').value));
   boardHTML=HuttonBoardEnhancer.createSequenceBoard({title:val('lessonTitle')||val('topic')||'Think Pair Share',subtitle:[val('subject'),val('yearGroup'),val('topic')].filter(Boolean).join(' | '),stages:[
    {label:'Think',heading:'Think quietly',prompt:currentData.question},
    {label:'Pair',heading:'Discuss with your partner',prompt:currentData.question},
@@ -158,7 +159,7 @@ function buildDeck(){
    {label:'Feedback',heading:'Possible response',prompt:currentData.question,answer:currentData.possibleResponse,answerLabel:'Possible response',details:currentData.discussionPoints}
   ]});
   document.getElementById('questionPreview').textContent=currentData.question;
-  document.getElementById('downloadBox').classList.remove('hidden');
+  const box=document.getElementById('downloadBox');box.hidden=false;box.removeAttribute('aria-hidden');box.classList.remove('hidden');box.style.display='block';
   setStatus('Think Pair Share question ready. Download the PowerPoint when you are happy.','ok');
   document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});
  }catch(e){setStatus(e.message,'bad')}
@@ -228,7 +229,7 @@ function initPremiumGeneration(){
       validate:validatePremiumForm,
       buildPrompt:makePrompt,
       onSuccess:async function(json){
-        document.getElementById('aiResponse').value=JSON.stringify(json); buildDeck();
+        document.getElementById('aiResponse').value=JSON.stringify(json); buildDeck(json);
       },
       systemMessage:'You generate concise UK secondary school Think Pair Share questions and feedback. Return only JSON that matches the supplied schema.',
       loadingMessage:'Generating Think Pair Share question...',

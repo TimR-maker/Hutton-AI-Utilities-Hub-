@@ -459,12 +459,12 @@ show();
 </body></html>`;
 }
 
-function buildTask(){
+function premiumResult(source){if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);return source}
+function buildTask(source){
  try{
-   const data=normalise(extractJSON(val('aiResponse')));
+   const data=normalise(premiumResult(source)||extractJSON(val('aiResponse')));
    taskHTML=HuttonBoardEnhancer.enhance(renderTask(data),{timer:false});
-   document.getElementById('downloadBox').classList.remove('hidden');
-   document.getElementById('preview').srcdoc=taskHTML;
+   const box=document.getElementById('downloadBox'),frame=document.getElementById('preview');box.hidden=false;box.removeAttribute('aria-hidden');box.classList.remove('hidden');box.style.display='block';frame.style.display='block';frame.srcdoc=taskHTML;
    setStatus('Through-the-door task created successfully.','ok');
    document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});
  }catch(e){setStatus('Could not create the task: '+e.message,'bad')}
@@ -634,7 +634,7 @@ function initPremiumGeneration(){
       buildPrompt:makePrompt,
       onSuccess:async function(json){
         document.getElementById('aiResponse').value=JSON.stringify(json);
-        buildTask();
+        buildTask(json);
       },
       systemMessage:'You generate concise, classroom-ready UK secondary school through-the-door starter tasks. Return only JSON that matches the supplied schema.',
       loadingMessage:'Generating through-the-door task...',

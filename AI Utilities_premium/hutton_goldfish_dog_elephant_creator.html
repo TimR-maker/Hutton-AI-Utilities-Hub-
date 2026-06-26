@@ -173,9 +173,10 @@ function addAnimalImagesToBoard(html){
  [['Goldfish','goldfish'],['Dog','dog'],['Elephant','elephant']].forEach(([name,key])=>{html=html.replace('<p class="phase">'+name+'</p>','<div class="phase-animal"><img src="'+GDE_ANIMAL_IMAGES[key]+'" alt="'+name+'"></div>')});
  return html;
 }
-async function buildDeck(){
+function premiumResult(source){if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);return source}
+async function buildDeck(source){
  try{
-  currentData=normaliseResponse(extractJSON(document.getElementById('aiResponse').value));
+  currentData=normaliseResponse(premiumResult(source)||extractJSON(document.getElementById('aiResponse').value));
   await loadGDEAnimalImages();
   boardHTML=addAnimalImagesToBoard(HuttonBoardEnhancer.createSequenceBoard({title:val('lessonTitle')||'Goldfish Dog Elephant',subtitle:[val('subject'),val('yearGroup'),val('keyStage')].filter(Boolean).join(' | '),stages:[
    {label:'Goldfish',heading:'Last lesson',prompt:currentData.goldfish.question,answer:currentData.goldfish.explanation,answerLabel:'Answer',details:[currentData.goldfish.discussionPoint]},
@@ -183,7 +184,7 @@ async function buildDeck(){
    {label:'Elephant',heading:'A long time ago',prompt:currentData.elephant.question,answer:currentData.elephant.explanation,answerLabel:'Answer',details:[currentData.elephant.discussionPoint]}
   ]}));
   renderPreview();
-  document.getElementById('downloadBox').classList.remove('hidden');
+  const box=document.getElementById('downloadBox');box.hidden=false;box.removeAttribute('aria-hidden');box.classList.remove('hidden');box.style.display='block';
   setStatus('Goldfish Dog Elephant questions ready. Download the PowerPoint when you are happy.','ok');
   document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});
  }catch(e){setStatus(e.message,'bad')}
@@ -279,7 +280,7 @@ function initPremiumGeneration(){
       validate:validatePremiumForm,
       buildPrompt:makePrompt,
       onSuccess:async function(json){
-        document.getElementById('aiResponse').value=JSON.stringify(json); await buildDeck();
+        document.getElementById('aiResponse').value=JSON.stringify(json); await buildDeck(json);
       },
       systemMessage:'You generate concise UK secondary school retrieval questions and feedback. Return only JSON that matches the supplied schema.',
       loadingMessage:'Generating Goldfish Dog Elephant questions...',
