@@ -99,6 +99,12 @@ h2{
   font-size:1.45rem;
 }
 p{line-height:1.48}
+.launch-row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+}
 .launch{
   display:inline-flex;
   align-items:center;
@@ -161,8 +167,11 @@ p{line-height:1.48}
 <main>
   <section class="panel">
     <h2>Launch the Hub</h2>
-    <p>Click the button below to open the main AI Utilities Hub.</p>
-    <a class="launch" href="AI Utilities/Hutton_AI_Utilities_Hub.html">🏠 Open Hutton AI Utilities Hub</a>
+    <p>Choose the Premium/API Hub for the experimental direct-generation utilities, or the Standard Hub for the original prompt-and-paste suite.</p>
+    <div class="launch-row">
+      <a class="launch" href="AI Utilities_premium/Hutton_AI_Utilities_Hub.html">🏠 Open Premium/API Hub</a>
+      <a class="launch" href="AI Utilities/Hutton_AI_Utilities_Hub.html">🏠 Open Standard Hub</a>
+    </div>
   </section>
 
   <section class="panel">
