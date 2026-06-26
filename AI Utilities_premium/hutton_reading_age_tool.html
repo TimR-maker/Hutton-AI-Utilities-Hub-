@@ -12,6 +12,7 @@ The copyright and intellectual property rights in this software remain the prope
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hutton Grammar School Reading Age Checker</title>
+<script src="shared/hutton-premium-api.js"></script>
 <style>
 :root{--navy:#0b2348;--navy2:#12315f;--line:#d8e2ee;--text:#132033;--muted:#607089;--focus:#315a98}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#f6f9fd,#eaf2fa);color:var(--text)}
@@ -69,17 +70,14 @@ background:#0b2348;color:#fff;cursor:pointer}
 <div class="full checkrow"><input id="keepMeaning" type="checkbox" checked><label for="keepMeaning" style="margin:0">Preserve the meaning and key subject terminology where possible</label></div>
 <div class="full"><label for="guidance">Additional teacher guidance</label><textarea id="guidance" rows="3" placeholder="e.g. Keep equations unchanged; simplify for weak readers; retain GCSE keywords; avoid changing quotations..."></textarea></div>
 </div>
-<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" onclick="makePrompt()">Generate prompt</button></div>
+<div class="actions"><button class="secondary" onclick="applySavedLessonContext()">Apply saved lesson context</button><button class="primary" id="generateResourceBtn"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create reading age resource</button></div><div id="status" class="status"></div>
 </section>
 
 <section class="card hidden" id="promptBox"><h2><span class="step">2</span>Copy this into ChatGPT, Copilot or Claude</h2><textarea id="prompt" readonly></textarea><div class="actions"><button class="secondary" onclick="copyText('prompt')"><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>Copy prompt</button><a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="">Open ChatGPT</a><a class="btn" href="https://copilot.microsoft.com/" target="_blank" rel="noopener"><img class="brand-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xNi4xNDM3IDUuMzQ5MzJDMTUuOTEwMSA0LjU0OTY2IDE1LjE3NyA0IDE0LjM0MzkgNEwxMy43NDI3IDRDMTIuODQ2NyA0IDEyLjA3NTggNC42MzQgMTEuOTAzIDUuNTEzMjFMMTAuODUzNSAxMC44NTAxTDExLjE1MDkgOS44OTEwMkMxMS4zOTQzIDkuMTA2MyAxMi4xMjAyIDguNTcxNDMgMTIuOTQxOCA4LjU3MTQzTDE2LjIzNTEgOC41NzE0M0wxNy42MzUyIDkuNzQzNDdMMTguODgxOCA4LjU3MTQzSDE4LjQ5MDVDMTcuNjU3NCA4LjU3MTQzIDE2LjkyNDIgOC4wMjE3NyAxNi42OTA3IDcuMjIyMTFMMTYuMTQzNyA1LjM0OTMyWiIgZmlsbD0idXJsKCNwYWludDBfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOC4wNDkyIDE4LjY0NDdDOC4yODAxNyAxOS40NDgyIDkuMDE1MTkgMjAuMDAxNyA5Ljg1MTIxIDIwLjAwMTdIMTEuMDc1QzEyLjA4NDQgMjAuMDAxNyAxMi45MTI2IDE5LjIwMjUgMTIuOTQ4OCAxOC4xOTM4TDEzLjEyOTUgMTMuMTQ0NUwxMi44NDIgMTQuMDk3MUMxMi42MDMxIDE0Ljg4ODYgMTEuODczOCAxNS40MzAyIDExLjA0NyAxNS40MzAyTDcuNzMzODMgMTUuNDMwMkw2LjM0OTU5IDE0LjU0NTFMNS4zMjgxMiAxNS40MzAySDUuNzEzMjRDNi41NDkyNiAxNS40MzAyIDcuMjg0MjcgMTUuOTgzNyA3LjUxNTI0IDE2Ljc4NzJMOC4wNDkyIDE4LjY0NDdaIiBmaWxsPSJ1cmwoI3BhaW50MV9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50Ml9yYWRpYWxfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik0xNC4yNTAzIDRINy42ODc4NUM1LjgxMjg2IDQgNC42ODc4NyA2LjM5NzQ4IDMuOTM3ODggOC43OTQ5N0MzLjA0OTMzIDExLjYzNTQgMS44ODY2NSAxNS40MzQyIDUuMjUwMzcgMTUuNDM0Mkg4LjExMTQ1QzguOTQzNSAxNS40MzQyIDkuNjc1NDggMTQuODg3OCA5LjkxMTI1IDE0LjA4OTlDMTAuNDA0NyAxMi40MTk5IDExLjI2NDkgOS41MjE2MiAxMS45NDExIDcuMzEzNzNDMTIuMjg1NyA2LjE4ODM3IDEyLjU3MjggNS4yMjE4OCAxMy4wMTM0IDQuNjIwMDFDMTMuMjYwNCA0LjI4MjU4IDEzLjY3MjEgNCAxNC4yNTAzIDRaIiBmaWxsPSJ1cmwoI3BhaW50M19saW5lYXJfMTQ0OV82MTUwOSkiLz4NCjxwYXRoIGQ9Ik05Ljc0OTAyIDIwLjAwMDZIMTYuMzExNUMxOC4xODY1IDIwLjAwMDYgMTkuMzExNCAxNy42MDM5IDIwLjA2MTQgMTUuMjA3M0MyMC45NSAxMi4zNjc4IDIyLjExMjcgOC41NzAzMSAxOC43NDg5IDguNTcwMzFIMTUuODg3N0MxNS4wNTU3IDguNTcwMzEgMTQuMzIzOCA5LjExNjU3IDE0LjA4OCA5LjkxNDQ0QzEzLjU5NDYgMTEuNTgzOSAxMi43MzQzIDE0LjQ4MSAxMi4wNTgyIDE2LjY4OEMxMS43MTM2IDE3LjgxMyAxMS40MjY1IDE4Ljc3OTIgMTAuOTg1OSAxOS4zODA4QzEwLjczODkgMTkuNzE4MSAxMC4zMjczIDIwLjAwMDYgOS43NDkwMiAyMC4wMDA2WiIgZmlsbD0idXJsKCNwYWludDRfcmFkaWFsXzE0NDlfNjE1MDkpIi8+DQo8cGF0aCBkPSJNOS43NDkwMiAyMC4wMDA2SDE2LjMxMTVDMTguMTg2NSAyMC4wMDA2IDE5LjMxMTQgMTcuNjAzOSAyMC4wNjE0IDE1LjIwNzNDMjAuOTUgMTIuMzY3OCAyMi4xMTI3IDguNTcwMzEgMTguNzQ4OSA4LjU3MDMxSDE1Ljg4NzdDMTUuMDU1NyA4LjU3MDMxIDE0LjMyMzggOS4xMTY1NyAxNC4wODggOS45MTQ0NEMxMy41OTQ2IDExLjU4MzkgMTIuNzM0MyAxNC40ODEgMTIuMDU4MiAxNi42ODhDMTEuNzEzNiAxNy44MTMgMTEuNDI2NSAxOC43NzkyIDEwLjk4NTkgMTkuMzgwOEMxMC43Mzg5IDE5LjcxODEgMTAuMzI3MyAyMC4wMDA2IDkuNzQ5MDIgMjAuMDAwNloiIGZpbGw9InVybCgjcGFpbnQ1X2xpbmVhcl8xNDQ5XzYxNTA5KSIvPg0KPGRlZnM+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50MF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxNy43MTI4IDEwLjg5NDgpIHJvdGF0ZSgtMTI5LjE0MSkgc2NhbGUoNy4yMDc1MSA2Ljc2OTUzKSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDk1NTc1OCIgc3RvcC1jb2xvcj0iIzAwQUVGRiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjc3MzE4NSIgc3RvcC1jb2xvcj0iIzIyNTNDRSIvPg0KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDczNkM0Ii8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDFfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi43NDM0NyAxNS40MDI0KSByb3RhdGUoNTEuNzMyOCkgc2NhbGUoNi41ODY0NyA2LjM5NDgzKSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjRkZCNjU3Ii8+DQo8c3RvcCBvZmZzZXQ9IjAuNjMzNzI4IiBzdG9wLWNvbG9yPSIjRkY1RjNEIi8+DQo8c3RvcCBvZmZzZXQ9IjAuOTIzMzkyIiBzdG9wLWNvbG9yPSIjQzAyQjNDIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPHJhZGlhbEdyYWRpZW50IGlkPSJwYWludDJfcmFkaWFsXzE0NDlfNjE1MDkiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNy41MjUyMiAxNS40MzAxKSByb3RhdGUoLTkzLjM1ODUpIHNjYWxlKDEwLjE0ODcgNTguOTA1KSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDMiIHN0b3AtY29sb3I9IiNGRkM4MDAiLz4NCjxzdG9wIG9mZnNldD0iMC4zMSIgc3RvcC1jb2xvcj0iIzk4QkQ0MiIvPg0KPHN0b3Agb2Zmc2V0PSIwLjQ5IiBzdG9wLWNvbG9yPSIjNTJCNDcxIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODQzODM4IiBzdG9wLWNvbG9yPSIjMEQ5MUUxIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSI4LjExMzM3IiB5MT0iNCIgeDI9IjguNTkyMDEiIHkyPSIxNS40MzU1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBzdG9wLWNvbG9yPSIjM0RDQkZGIi8+DQo8c3RvcCBvZmZzZXQ9IjAuMjQ2Njc0IiBzdG9wLWNvbG9yPSIjMDU4OEY3IiBzdG9wLW9wYWNpdHk9IjAiLz4NCjwvbGluZWFyR3JhZGllbnQ+DQo8cmFkaWFsR3JhZGllbnQgaWQ9InBhaW50NF9yYWRpYWxfMTQ0OV82MTUwOSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxOS4wODYxIDcuNDUxMikgcm90YXRlKDEwOS44ODEpIHNjYWxlKDE1LjI0NTEgMTguNzQ0NikiPg0KPHN0b3Agb2Zmc2V0PSIwLjA2NjE3MTQiIHN0b3AtY29sb3I9IiM4QzQ4RkYiLz4NCjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjRjI1OThBIi8+DQo8c3RvcCBvZmZzZXQ9IjAuODk1ODMzIiBzdG9wLWNvbG9yPSIjRkZCMTUyIi8+DQo8L3JhZGlhbEdyYWRpZW50Pg0KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzE0NDlfNjE1MDkiIHgxPSIxOS42MDQ1IiB5MT0iNy44NzI0NyIgeDI9IjE5LjU5ODIiIHkyPSIxMC45ODU3IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+DQo8c3RvcCBvZmZzZXQ9IjAuMDU4MTUzNSIgc3RvcC1jb2xvcj0iI0Y4QURGQSIvPg0KPHN0b3Agb2Zmc2V0PSIwLjcwODA2MyIgc3RvcC1jb2xvcj0iI0E4NkVERCIgc3RvcC1vcGFjaXR5PSIwIi8+DQo8L2xpbmVhckdyYWRpZW50Pg0KPC9kZWZzPg0KPC9zdmc+DQo=" alt="">Open Copilot</a><a class="btn" href="https://claude.ai/" target="_blank" rel="noopener"><img class="brand-icon" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="">Open Claude</a></div></section>
 
-<section class="card">
-<h2><span class="step">3</span>Paste the AI response here</h2>
-<label for="aiResponse">AI-generated response</label>
-<textarea id="aiResponse" rows="14" placeholder="Paste the AI-generated JSON object here. It is fine if your AI tool added extra suggestions after it; the utility will try to extract the JSON."></textarea>
-<div class="actions"><button class="primary" onclick="buildReadingResource()"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create reading age resource</button><button class="secondary" onclick="loadExample()">Load example data</button><button class="danger" onclick="document.getElementById('aiResponse').value='';setStatus('','')">Clear pasted response</button></div>
-<div id="status" class="status"></div>
+<section class="card hidden" aria-hidden="true">
+<h2><span class="step">3</span>Stored AI response</h2>
+<textarea id="aiResponse" rows="14"></textarea>
 </section>
 
 <section class="card hidden" id="downloadBox">
@@ -128,6 +126,38 @@ function applySavedLessonContext(){
  setInputIfPossible('title',ctx.lessonFocus||ctx.topic,false);
  setInputIfPossible('guidance',ctx.notes,true);
  setStatus('Saved lesson context applied. Check the fields, then generate the prompt.','ok');
+}
+
+const READING_AGE_SCHEMA={
+ type:'object',
+ additionalProperties:false,
+ required:['readingAgeCheck'],
+ properties:{
+  readingAgeCheck:{
+   type:'object',
+   additionalProperties:false,
+   required:['title','subject','intendedYearGroup','purpose','approximateReadingAge','readingAgeExplanation','originalText','simplifiedVersion','stretchVersion','keyVocabulary','sentenceStarters','teacherNotes'],
+   properties:{
+    title:{type:'string'},
+    subject:{type:'string'},
+    intendedYearGroup:{type:'string'},
+    purpose:{type:'string'},
+    approximateReadingAge:{type:'string'},
+    readingAgeExplanation:{type:'string'},
+    originalText:{type:'string'},
+    simplifiedVersion:{type:'object',additionalProperties:false,required:['label','targetLevel','text'],properties:{label:{type:'string'},targetLevel:{type:'string'},text:{type:'string'}}},
+    stretchVersion:{type:'object',additionalProperties:false,required:['label','targetLevel','text'],properties:{label:{type:'string'},targetLevel:{type:'string'},text:{type:'string'}}},
+    keyVocabulary:{type:'array',items:{type:'object',additionalProperties:false,required:['term','definition','supportTip'],properties:{term:{type:'string'},definition:{type:'string'},supportTip:{type:'string'}}}},
+    sentenceStarters:{type:'array',items:{type:'string'}},
+    teacherNotes:{type:'string'}
+   }
+  }
+ }
+};
+
+function validatePremiumForm(){
+ if(!val('sourceText')&&!val('title'))return 'Paste some text or add a title/topic first.';
+ return '';
 }
 
 function makePrompt(){
@@ -212,8 +242,8 @@ Before returning, silently check:
 4. Key vocabulary and sentence starters are included.
 5. The JSON object is valid and appears first, with no code fence.`;
  document.getElementById('prompt').value=prompt;
- document.getElementById('promptBox').classList.remove('hidden');
- document.getElementById('promptBox').scrollIntoView({behavior:'smooth'});
+ if(!window.HuttonPremiumAPI){document.getElementById('promptBox').classList.remove('hidden');document.getElementById('promptBox').scrollIntoView({behavior:'smooth'});}
+ return prompt;
 }
 
 async function copyText(id){const t=document.getElementById(id); await navigator.clipboard.writeText(t.value); setStatus('Copied to clipboard.','ok')}
@@ -371,7 +401,10 @@ function renderResource(r){
 </style></head><body><div class="page">${BADGE?`<img class="badge" src="${BADGE}" alt="Hutton Grammar School badge">`:''}<div class="header"><div class="school">Hutton Grammar School</div><h1 contenteditable="true">${escapeHTML(r.title)}</h1><div class="meta" contenteditable="true">${escapeHTML(r.subject)} · ${escapeHTML(r.intendedYearGroup)} · ${escapeHTML(r.purpose)}</div></div><div class="age"><h2>Approximate reading age: <span contenteditable="true">${escapeHTML(r.approximateReadingAge||'Not specified')}</span></h2><p contenteditable="true">${escapeHTML(r.readingAgeExplanation)}</p></div><div class="grid"><section class="box simple"><h2>${escapeHTML(r.simplifiedVersion.label||'Simplified version')} <small>(${escapeHTML(r.simplifiedVersion.targetLevel||'')})</small></h2><div class="text">${paraHTML(r.simplifiedVersion.text)}</div></section><section class="box stretch"><h2>${escapeHTML(r.stretchVersion.label||'Stretch version')} <small>(${escapeHTML(r.stretchVersion.targetLevel||'')})</small></h2><div class="text">${paraHTML(r.stretchVersion.text)}</div></section></div><section class="box support"><h2>Key vocabulary</h2><table><thead><tr><th>Term</th><th>Definition</th><th>Support tip</th></tr></thead><tbody>${vocab}</tbody></table></section><section class="box support"><h2>Sentence starters for weaker students</h2><ul>${starters}</ul></section><section class="box"><h2>Teacher notes</h2><p contenteditable="true">${escapeHTML(r.teacherNotes)}</p></section><section class="box original pageBreak"><h2>Original text</h2><div class="text">${paraHTML(r.originalText)}</div></section></div><div class="actions"><button onclick="window.print()">Print / Save PDF</button></div>
 </body></html>`;
 }
-function buildReadingResource(){try{const data=normalise(extractJSON(val('aiResponse')));resourceHTML=renderResource(data);document.getElementById('downloadBox').classList.remove('hidden');document.getElementById('preview').srcdoc=resourceHTML;setStatus('Reading age resource created successfully.','ok');document.getElementById('downloadBox').scrollIntoView({behavior:'smooth'});}catch(e){setStatus('Could not create the reading age resource: '+e.message,'bad')}}
+function premiumResult(source){if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);if(source&&source.result)source=source.result;if(typeof source==='string')source=extractJSON(source);return source}
+function buildReadingResource(source){try{const data=normalise(premiumResult(source)||extractJSON(val('aiResponse')));resourceHTML=renderResource(data);const box=document.getElementById('downloadBox'),frame=document.getElementById('preview');box.hidden=false;box.removeAttribute('aria-hidden');box.classList.remove('hidden');box.style.display='block';frame.style.display='block';frame.srcdoc=resourceHTML;setStatus('Reading age resource created successfully.','ok');box.scrollIntoView({behavior:'smooth'});}catch(e){setStatus('Could not create the reading age resource: '+e.message,'bad')}}
+function initPremiumGeneration(){const btn=document.getElementById('generateResourceBtn');if(!btn||!window.HuttonPremiumAPI)return;btn.addEventListener('click',function(){HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_reading_age',schema:READING_AGE_SCHEMA,validate:validatePremiumForm,buildPrompt:makePrompt,onSuccess:async function(json){document.getElementById('aiResponse').value=JSON.stringify(json);buildReadingResource(json)},systemMessage:'You adapt classroom text for UK secondary teachers. Return only JSON that matches the supplied schema.',loadingMessage:'Creating reading age resource...',successMessage:'Reading age resource created successfully.',failurePrefix:'Automatic generation failed'});});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumGeneration);else initPremiumGeneration();
 function getCleanFinalHTML(){const frame=document.getElementById('preview');let doc=null;try{doc=frame&&frame.contentDocument?frame.contentDocument:null}catch(e){}if(!doc||!doc.documentElement)return resourceHTML;const clone=doc.documentElement.cloneNode(true);clone.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));clone.querySelectorAll('style').forEach(style=>{style.textContent=style.textContent.replace(/\[contenteditable="true"\][^{}]*\{[^{}]*\}/g,'').replace(/\[contenteditable="true"\]:focus[^{}]*\{[^{}]*\}/g,'')});return '<!doctype html>'+clone.outerHTML}
 function downloadResource(){if(!resourceHTML)return;const blob=new Blob([getCleanFinalHTML()],{type:'text/html'});const a=document.createElement('a');const name=(val('title')||'reading-age-check').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42).replace(/-+$/,'');a.href=URL.createObjectURL(blob);a.download=name+' reading age check.html';a.click();URL.revokeObjectURL(a.href)}
 function openResource(){if(!resourceHTML)return;const w=window.open();w.document.open();w.document.write(getCleanFinalHTML());w.document.close()}
