@@ -93,9 +93,12 @@ button:hover,.btn:hover{background:var(--navy);color:#fff}
 .context-cue{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;background:#eef6ff;border:1px solid #cbd9eb;border-radius:999px;padding:8px 11px;font-size:.84rem;font-weight:700;color:var(--navy);white-space:nowrap}
 .context-chevron{font-size:1.05rem;line-height:1;transition:transform .15s ease}
 .context-heading[aria-expanded="true"] .context-chevron{transform:rotate(180deg)}
+#lessonContextBody{display:none!important}.context-heading{cursor:default}.context-heading .context-cue{display:none}
+.context-summary-bar{display:flex;align-items:center;justify-content:space-between;gap:18px}.context-summary-bar h2{margin:0;color:var(--navy);font-size:1.3rem}.context-summary-bar p{margin:6px 0 0}.staff-room-feature{position:relative;min-height:220px;overflow:hidden;padding:0;background:#071426;border-color:#173a5f}.staff-room-feature-image{position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(4,14,27,.96) 0%,rgba(4,14,27,.84) 38%,rgba(4,14,27,.18) 76%),url('virtual_staff_room_scene.png');background-size:cover;background-position:center 48%}.staff-room-feature-content{position:relative;z-index:1;width:min(520px,72%);padding:28px;color:#fff}.staff-room-feature-content h2{margin:0;font-size:1.65rem;letter-spacing:0}.staff-room-feature-content p{margin:8px 0 18px;color:#d9e5f1;line-height:1.45}.staff-room-feature-content .btn{background:#17633a;border-color:#4ade80;color:#fff}.staff-room-feature-content .btn:hover{background:#0f7a42}
 @media(max-width:980px){.external-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:980px){.context-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.external-grid{grid-template-columns:1fr}.context-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.context-summary-bar{align-items:flex-start;flex-direction:column}.staff-room-feature{min-height:300px}.staff-room-feature-image{background-image:linear-gradient(180deg,rgba(4,14,27,.94) 0%,rgba(4,14,27,.78) 58%,rgba(4,14,27,.2)),url('virtual_staff_room_scene.png');background-position:center}.staff-room-feature-content{width:100%;padding:22px}}
 
 @media print{.quickbar,.tabs,.actions{display:none}body{background:#fff}.panel,.category{box-shadow:none}}
 
@@ -194,7 +197,7 @@ button:hover,.btn:hover{background:var(--navy);color:#fff}
   <div class="quickbar">
     <input id="search" class="search" placeholder="Search utilities, e.g. lesson or glossary..." oninput="filterTools()">
     <div class="actions">
-      <button onclick="scrollToLessonContext()">Lesson context</button>
+      <button onclick="scrollToLessonContext()">Teaching context</button>
       <button onclick="scrollToGuide()">Teacher guide</button>
       <button onclick="document.getElementById('externalSites').scrollIntoView({behavior:'smooth'})">External AI sites</button>
       <button onclick="openErrorModal()">Report errors</button>
@@ -207,13 +210,18 @@ button:hover,.btn:hover{background:var(--navy);color:#fff}
   </div>
 </section>
 
+<section class="panel staff-room-feature" aria-labelledby="staffRoomFeatureTitle">
+  <div class="staff-room-feature-image" aria-hidden="true"></div>
+  <div class="staff-room-feature-content"><h2 id="staffRoomFeatureTitle">Virtual Staff Room</h2><p>Think the lesson through with a department of experienced colleagues, then move directly into the most useful resources.</p><a class="btn" href="hutton_virtual_staff_room.html">Open Virtual Staff Room</a></div>
+</section>
+
 <section class="panel" id="lessonContextPanel">
-  <div class="category-heading context-heading" id="lessonContextToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="lessonContextBody" onclick="toggleLessonContext()" onkeydown="handleLessonContextKey(event)">
+  <div class="category-heading context-heading" id="lessonContextToggle">
     <div>
-      <h2>Lesson Context</h2>
-      <p>Save the subject, class and topic for the lesson you are working on. Later utilities can use this to reduce repeated typing.</p>
+      <h2>Today&rsquo;s Teaching Context</h2>
+      <p class="context-status" id="lessonContextStatus">No teaching context saved in this browser yet.</p>
     </div>
-    <span class="context-cue" aria-hidden="true"><span id="contextToggleText">Click to open</span><span class="context-chevron">&#9662;</span></span>
+    <div class="actions"><a class="btn" href="hutton_teaching_context.html">Edit teaching context</a><a class="btn" href="hutton_teaching_context.html?new=1">Start a new lesson</a></div>
   </div>
   <div id="lessonContextBody" class="hidden">
   <div class="context-grid">
@@ -270,7 +278,7 @@ button:hover,.btn:hover{background:var(--navy);color:#fff}
     <button onclick="saveLessonContext()">Save lesson context</button>
     <button onclick="clearLessonContext()">Clear lesson context</button>
   </div>
-  <p class="context-status" id="lessonContextStatus">No lesson context saved in this browser yet.</p>
+  <p class="context-status" id="legacyLessonContextStatus">No lesson context saved in this browser yet.</p>
   </div>
 </section>
 
@@ -956,7 +964,6 @@ function scrollToGuide(){
 }
 
 function scrollToLessonContext(){
-  setLessonContextOpen(true);
   document.getElementById('lessonContextPanel').scrollIntoView({behavior:'smooth'});
 }
 
@@ -1049,6 +1056,7 @@ document.getElementById('errorModal')?.addEventListener('click',e=>{
   if(e.target.id==='errorModal')closeErrorModal();
 });
 loadLessonContext();
+(function routeFirstVisitThroughContext(){const params=new URLSearchParams(location.search);if(params.get('skipContext')==='1')return;const c=getLessonContext();if(!(c.teacherName&&c.subject&&c.yearGroup&&c.keyStage&&c.topic&&c.lessonFocus))location.replace('hutton_teaching_context.html')})();
 
 </script>
 

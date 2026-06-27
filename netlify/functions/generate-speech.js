@@ -1,36 +1,28 @@
 // Teacher AI Hub Premium voice service.
-// Uses distinct voices with subtle Lancashire / North West English delivery.
+// Uses distinct, high-quality voices for the five colleagues.
 
 const SPEAKERS = {
   Sarah: {
-    voice: "shimmer",
-    direction: "An experienced woman teacher from Lancashire. Warm, calm and reassuring, with attentive phrasing and gentle confidence."
+    voice: "coral",
+    direction: "Warm, calm and reassuring, with attentive phrasing and gentle confidence."
   },
   Mark: {
     voice: "fable",
-    direction: "An experienced male teacher from Lancashire. Measured and understated, with dry warmth and unhurried authority."
+    direction: "Use natural British English. Sound measured and experienced, with dry warmth and unhurried authority."
   },
   Rachel: {
-    voice: "sage",
-    direction: "A woman teacher from the North West of England. Clear, precise and curious, with purposeful energy, strong projection and a slightly firmer recording level."
+    voice: "marin",
+    direction: "Clear, precise and curious, with purposeful energy, strong projection and a slightly firmer recording level."
   },
   Imran: {
-    voice: "ash",
-    direction: "A male teacher from Preston in Lancashire. Friendly, lively and optimistic, with conversational energy that remains professional."
+    voice: "echo",
+    direction: "Friendly, lively and optimistic, with conversational energy that remains professional."
   },
   Aisha: {
     voice: "nova",
-    direction: "A woman teacher from Lancashire. Composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
+    direction: "Use a clearly female voice. Sound composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
   }
 };
-
-const ACCENT_DIRECTION = [
-  "A recognisably Northern English accent is mandatory and takes priority over the base voice's default accent.",
-  "Use a natural contemporary Lancashire or nearby North West English accent, suitable for a professional secondary-school colleague.",
-  "Do not use a General American accent, American vowel sounds, American tapped t sounds, Received Pronunciation or a southern-English accent.",
-  "Use Northern English short-a pronunciation in words such as class, answer, ask, can't and after.",
-  "Keep the regional quality authentic and understated: no comic dialect, exaggerated performance or forced local sayings."
-].join(" ");
 
 function jsonResponse(statusCode, error) {
   return {
@@ -64,7 +56,7 @@ exports.handler = async function (event) {
         voice: profile.voice,
         input: text,
         speed: 1.06,
-        instructions: `${ACCENT_DIRECTION} ${profile.direction}`,
+        instructions: profile.direction,
         response_format: "mp3"
       })
     });
