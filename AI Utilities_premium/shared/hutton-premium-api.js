@@ -85,7 +85,7 @@
 
       setStatus(statusEl, options.loadingMessage || "Generating resource...", "warning");
 
-      const response = await fetch(endpoint, {
+      const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -94,11 +94,22 @@
           schemaName: options.schemaName || "teacher_ai_hub_resource",
           systemMessage: options.systemMessage || "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema."
         })
-      });
-
-      const data = await response.json().catch(() => null);
-      if (!data) {
-        throw new Error("The server did not return valid JSON.");
+      };
+      let response;
+      let responseText = "";
+      let data = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        response = await fetch(endpoint, requestOptions);
+        responseText = await response.text();
+        try { data = JSON.parse(responseText); } catch (error) { data = null; }
+        if (data) break;
+        if (attempt === 0 && (!response.ok || !responseText.trim())) {
+          setStatus(statusEl, "The generation service was temporarily unavailable. Retrying once...", "warning");
+          await new Promise((resolve) => setTimeout(resolve, 900));
+          continue;
+        }
+        const detail = responseText.trim().replace(/\s+/g, " ").slice(0, 140);
+        throw new Error("The server returned " + response.status + " " + response.statusText + " instead of JSON" + (detail ? ": " + detail : "."));
       }
       if (!response.ok || !data.ok) {
         throw new Error(data.error || "Automatic generation failed.");
