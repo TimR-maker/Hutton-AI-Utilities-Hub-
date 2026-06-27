@@ -3,26 +3,34 @@
 
 const SPEAKERS = {
   Sarah: {
-    voice: "coral",
-    direction: "Warm, calm and reassuring, with attentive phrasing and gentle confidence."
+    voice: "shimmer",
+    direction: "An experienced woman teacher from Lancashire. Warm, calm and reassuring, with attentive phrasing and gentle confidence."
   },
   Mark: {
-    voice: "cedar",
-    direction: "Measured, experienced and understated, with a dry warmth and unhurried authority."
+    voice: "fable",
+    direction: "An experienced male teacher from Lancashire. Measured and understated, with dry warmth and unhurried authority."
   },
   Rachel: {
-    voice: "marin",
-    direction: "Clear, precise and curious, with purposeful energy and thoughtful emphasis on questions."
+    voice: "sage",
+    direction: "A woman teacher from the North West of England. Clear, precise and curious, with purposeful energy and thoughtful emphasis on questions."
   },
   Imran: {
-    voice: "echo",
-    direction: "Friendly, lively and optimistic, with conversational energy that remains professional."
+    voice: "ash",
+    direction: "A male teacher from Preston in Lancashire. Friendly, lively and optimistic, with conversational energy that remains professional."
   },
   Aisha: {
-    voice: "sage",
-    direction: "Composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
+    voice: "verse",
+    direction: "A woman teacher from Lancashire. Composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
   }
 };
+
+const ACCENT_DIRECTION = [
+  "A recognisably Northern English accent is mandatory and takes priority over the base voice's default accent.",
+  "Use a natural contemporary Lancashire or nearby North West English accent, suitable for a professional secondary-school colleague.",
+  "Do not use a General American accent, American vowel sounds, American tapped t sounds, Received Pronunciation or a southern-English accent.",
+  "Use Northern English short-a pronunciation in words such as class, answer, ask, can't and after.",
+  "Keep the regional quality authentic and understated: no comic dialect, exaggerated performance or forced local sayings."
+].join(" ");
 
 function jsonResponse(statusCode, error) {
   return {
@@ -55,7 +63,7 @@ exports.handler = async function (event) {
         model: process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts",
         voice: profile.voice,
         input: text,
-        instructions: `Speak as a trusted UK secondary teacher from Lancashire. Use a natural contemporary Lancashire or broader North West English accent. Keep it subtle, authentic and professional: never exaggerated, comic or dialect-heavy. ${profile.direction}`,
+        instructions: `${ACCENT_DIRECTION} ${profile.direction}`,
         response_format: "mp3"
       })
     });
