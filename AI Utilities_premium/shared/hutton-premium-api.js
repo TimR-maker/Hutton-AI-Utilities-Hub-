@@ -98,14 +98,14 @@
       let response;
       let responseText = "";
       let data = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < 3; attempt++) {
         response = await fetch(endpoint, requestOptions);
         responseText = await response.text();
         try { data = JSON.parse(responseText); } catch (error) { data = null; }
         if (data) break;
-        if (attempt === 0 && (!response.ok || !responseText.trim())) {
-          setStatus(statusEl, "The generation service was temporarily unavailable. Retrying once...", "warning");
-          await new Promise((resolve) => setTimeout(resolve, 900));
+        if (attempt < 2 && (!response.ok || !responseText.trim())) {
+          setStatus(statusEl, options.retryMessage || options.loadingMessage || "Still preparing your resource...", "warning");
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
           continue;
         }
         const detail = responseText.trim().replace(/\s+/g, " ").slice(0, 140);
