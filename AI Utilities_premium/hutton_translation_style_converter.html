@@ -744,7 +744,7 @@ function autoPreviewAfterInput(){
  autoPreviewTimer=setTimeout(()=>{ if(document.getElementById('aiResponse').value.trim()) buildPreview(); },900);
 }
 
-const premiumTranslationSchema={type:'object',properties:{translationResource:{type:'object'}},required:['translationResource']};
+const premiumTranslationSchema={type:'object',additionalProperties:false,required:['translationResource'],properties:{translationResource:{type:'object',additionalProperties:false,required:['title','subject','yearGroup','mode','targetLanguage','styleReference','simplificationLevel','sourceSummary','mainText','studentInstructions','teacherNotes','keyVocabulary','checkingNotes'],properties:{title:{type:'string'},subject:{type:'string'},yearGroup:{type:'string'},mode:{type:'string'},targetLanguage:{type:'string'},styleReference:{type:'string'},simplificationLevel:{type:'string'},sourceSummary:{type:'string'},mainText:{type:'string'},studentInstructions:{type:'array',items:{type:'string'}},teacherNotes:{type:'array',items:{type:'string'}},keyVocabulary:{type:'array',items:{type:'object',additionalProperties:false,required:['term','translation','definition'],properties:{term:{type:'string'},translation:{type:'string'},definition:{type:'string'}}}},checkingNotes:{type:'array',items:{type:'string'}}}}}};
 function validatePremiumForm(){if(!val('sourceText'))return 'Paste the text you want to translate or restyle first.';return ''}
 function initPremiumGeneration(){
  const btn=document.getElementById('generateResourceBtn');
