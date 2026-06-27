@@ -12,14 +12,14 @@ const SPEAKERS = {
   },
   Rachel: {
     voice: "sage",
-    direction: "A woman teacher from the North West of England. Clear, precise and curious, with purposeful energy and thoughtful emphasis on questions."
+    direction: "A woman teacher from the North West of England. Clear, precise and curious, with purposeful energy, strong projection and a slightly firmer recording level."
   },
   Imran: {
     voice: "ash",
     direction: "A male teacher from Preston in Lancashire. Friendly, lively and optimistic, with conversational energy that remains professional."
   },
   Aisha: {
-    voice: "verse",
+    voice: "nova",
     direction: "A woman teacher from Lancashire. Composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
   }
 };
@@ -63,6 +63,7 @@ exports.handler = async function (event) {
         model: process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts",
         voice: profile.voice,
         input: text,
+        speed: 1.06,
         instructions: `${ACCENT_DIRECTION} ${profile.direction}`,
         response_format: "mp3"
       })
