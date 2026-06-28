@@ -26,6 +26,8 @@ header{--header-text-left:max(115px,calc((100% - 1220px)/2 + 16px));--header-log
 .badge{position:absolute;right:34px;top:50%;transform:translateY(-50%);width:110px;height:auto}
 h1{margin:0;font-size:2.75rem;line-height:1.05;color:#050b18;white-space:nowrap}
 header .motto{margin:11px 0 0;max-width:980px;font-family:Georgia,'Times New Roman',serif;font-size:1.18rem;font-style:italic;line-height:1.35;color:#40536c}
+.classroom-photo-band{max-width:1220px;margin:16px auto 0;padding:0 16px}
+.classroom-photo-band img{display:block;width:100%;height:clamp(150px,16vw,210px);object-fit:cover;object-position:center 39%;border-radius:8px;box-shadow:0 8px 24px rgba(7,30,60,.14)}
 main{max-width:1220px;margin:28px auto;padding:0 16px 54px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(7,30,60,.10);padding:22px;margin-bottom:18px}
 .quickbar{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
@@ -59,7 +61,7 @@ button:hover,.btn:hover{background:var(--navy);color:#fff}
 .hidden{display:none!important}
 @media(max-width:980px){.tool-grid{grid-template-columns:repeat(2,1fr)}.guide-grid,.quickbar,.flow{grid-template-columns:1fr}}
 @media(max-width:900px) and (min-width:761px){h1{font-size:1.8rem}header .motto{font-size:1.05rem}}
-@media(max-width:760px){header{padding:96px 18px 20px;text-align:center}.hub-logo{left:18px;top:18px;transform:none;width:50px;height:50px}.badge{right:18px;top:12px;transform:none;width:64px}h1{font-size:1.8rem}.motto{margin-left:auto!important;margin-right:auto!important;font-size:1rem!important}.tool-grid{grid-template-columns:1fr}.tool-card{min-height:auto}}
+@media(max-width:760px){header{padding:96px 18px 20px;text-align:center}.hub-logo{left:18px;top:18px;transform:none;width:50px;height:50px}.badge{right:18px;top:12px;transform:none;width:64px}h1{font-size:1.8rem}.motto{margin-left:auto!important;margin-right:auto!important;font-size:1rem!important}.classroom-photo-band{margin-top:10px;padding:0 12px}.classroom-photo-band img{height:116px;object-position:center 37%}.tool-grid{grid-template-columns:1fr}.tool-card{min-height:auto}}
 @media(max-width:620px){h1{font-size:1.05rem}}
 @media(max-width:360px){h1{font-size:.9rem}}
 
@@ -146,6 +148,7 @@ button:hover,.btn:hover{background:var(--navy);color:#fff}
 <h1>Hutton Grammar School AI Utilities Hub</h1>
 <p class="motto">Outsource the doing, not our thinking.</p>
 </header>
+<div class="classroom-photo-band" aria-hidden="true"><img src="shared/hutton_classroom_colour_cards.png" alt=""></div>
 
 <main>
 
