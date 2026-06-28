@@ -56,7 +56,7 @@ exports.handler = async function(event) {
     const systemMessage = String(
       requestBody.systemMessage ||
       "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema."
-    ).trim();
+    ).trim() + "\nUse British English spelling and terminology throughout all user-facing content, including behaviour rather than behavior.";
 
     if (!prompt) {
       return jsonResponse(400, { ok: false, error: "Missing prompt." });
@@ -69,7 +69,9 @@ exports.handler = async function(event) {
     const responseRequest = {
       model: useWebSearch
         ? (process.env.OPENAI_SEARCH_MODEL || "gpt-5.4-mini")
-        : (process.env.OPENAI_MODEL || "gpt-4.1-mini"),
+        : (requestBody.fastMode === true
+          ? (process.env.OPENAI_FAST_MODEL || "gpt-4.1-mini")
+          : (process.env.OPENAI_MODEL || "gpt-4.1-mini")),
       input: [
         { role: "system", content: systemMessage },
         { role: "user", content: prompt }

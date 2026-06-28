@@ -173,8 +173,10 @@ function applySavedLessonContext(){
 
 function makePrompt(){
  const subject=val('subject'),ks=val('keyStage'),level=val('simplificationLevel'),title=val('title')||'Dual-coded resource',visualCount=val('visualCount'),visualStyle=val('visualStyle'),sentenceLimit=val('sentenceLimit'),visualFrequency=val('visualFrequency'),source=val('sourceText')||'[Paste text here or refer to the uploaded document.]',guidance=val('guidance')||'No extra guidance.';
+ const requestedVisuals=parseInt(visualCount,10)||15;
+ const fullDiagramCount=Math.min(requestedVisuals,6);
  const frequencyInstruction=visualFrequency.includes('Maximum')
-   ? 'Use maximum visual support: aim for a small icon, SVG diagram, symbol row, or labelled visual cue for almost every sentence. Keep each one compact so the page is not overloaded.'
+   ? 'Use maximum visual support: add a compact labelled visual cue for almost every sentence, supported by the full diagrams. Keep each cue brief and purposeful.'
    : visualFrequency.includes('Very frequent')
      ? 'Use very frequent visuals: aim for one compact icon, SVG diagram, or labelled visual cue beside every sentence where it is possible and useful.'
      : visualFrequency.includes('2-3')
@@ -187,7 +189,8 @@ Create visual explanations that reduce pupils' cognitive load and make the subje
 Important:
 - Generate the visual icons or diagrams directly in the chat response.
 - Do not create separate image files or attachments.
-- Use compact inline SVG diagrams as the main visual form. Unicode symbols may support a diagram but must not be the only visual strategy.
+- Use up to ${fullDiagramCount} compact inline SVG diagrams for the most important relationships. Use lightweight HTML symbol rows or labelled visual cues for the remaining visual support.
+- Keep every SVG fast and compact: no more than 12 elements, no paths, no embedded images, no gradients and no filters. Use only rect, circle, line, polyline, polygon and text.
 - Keep each visual small enough to sit beside a short paragraph.
 - Do not just describe possible visuals.
 - Do not give me image prompts.
@@ -226,7 +229,7 @@ ${source}
 Please produce:
 1. A clear title.
 2. Simplified text using short sentences.
-3. Approximately ${visualCount} meaningful subject-specific SVG diagrams or visual models for key ideas.
+3. ${fullDiagramCount} meaningful subject-specific SVG diagrams or visual models for the most important ideas, plus compact visual cues where the requested frequency needs more support.
 4. Key vocabulary in bold.
 5. A short glossary at the end.
 
@@ -526,7 +529,7 @@ function initPremiumGeneration(){
  if(!btn||!window.HuttonPremiumAPI)return;
  btn.addEventListener('click',function(){
    if(!val('sourceText')){setStatus('Paste the text to rewrite first.','bad');document.getElementById('sourceText').focus();return;}
-   HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_dual_coding',schema:DUAL_CODING_SCHEMA,buildPrompt:makePrompt,onSuccess:async function(json){const resource=json.dualCodingResource||json;document.getElementById('aiProduct').innerHTML=resource.html||'';formatProduct();},systemMessage:'You are an expert UK secondary teacher and information designer. Create accurate dual-coded resources in which every visual explains a real subject relationship. Prefer varied, labelled inline SVG diagrams and visual models over generic emoji or decorative icon cards. Return only JSON matching the supplied schema. The html value must be a safe HTML fragment with no scripts or styles.',loadingMessage:'Creating dual-coded resource...',successMessage:'Dual-coded resource created successfully.',failurePrefix:'Automatic generation failed'});
+   HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_dual_coding',schema:DUAL_CODING_SCHEMA,buildPrompt:makePrompt,fastMode:true,onSuccess:async function(json){const resource=json.dualCodingResource||json;document.getElementById('aiProduct').innerHTML=resource.html||'';formatProduct();},systemMessage:'You are an expert UK secondary teacher and information designer. Create accurate dual-coded resources in which every visual explains a real subject relationship. Use compact, varied and labelled diagrams rather than generic emoji or decorative icon cards. Work efficiently: keep SVG markup simple and concise. Return only JSON matching the supplied schema. The html value must be a safe HTML fragment with no scripts or styles.',loadingMessage:'Creating dual-coded resource...',successMessage:'Dual-coded resource created successfully.',failurePrefix:'Automatic generation failed'});
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumGeneration);else initPremiumGeneration();
