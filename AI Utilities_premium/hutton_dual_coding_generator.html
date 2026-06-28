@@ -99,6 +99,7 @@ footer{font-size:.8rem;color:var(--muted);text-align:center;margin-top:16px}@med
 <div class="full"><label for="title">Title / topic</label><input id="title" placeholder="e.g. Energy transfer, Macbeth’s ambition, river erosion, food chains"></div>
 <div><label for="visualCount">Number of visuals</label><select id="visualCount"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>8</option><option>10</option><option>12</option><option>15+</option></select></div>
 <div><label for="visualStyle">Visual style</label><select id="visualStyle"><option selected>Mixed subject-specific diagrams and visual models</option><option>Labelled process diagrams</option><option>Comparison and classification visuals</option><option>Timelines, cycles and scales</option><option>Simple labelled icons</option><option>Revision poster style</option></select></div>
+<div><label for="visualQuality">Visual quality</label><select id="visualQuality"><option selected>Enhanced diagrams (recommended)</option><option>Quick diagrams</option></select></div>
 <div><label for="sentenceLimit">Sentence length</label><select id="sentenceLimit"><option selected>Up to 12 words</option><option>Up to 10 words</option><option>Up to 15 words</option></select></div>
 <div><label for="visualFrequency">Visual frequency</label><select id="visualFrequency"><option selected>Regular key vocabulary visuals</option><option>Frequent visuals every 2-3 sentences</option><option>Very frequent visuals every sentence</option><option>Maximum visual support: icon or diagram for almost every sentence</option></select></div>
 <div class="full"><label for="sourceText">Text to rewrite</label><textarea id="sourceText" rows="12" placeholder="Paste the complete text to simplify and support with visuals."></textarea></div>
@@ -587,12 +588,55 @@ function renderDualCodingResource(resource){
  const glossary=Array.isArray(resource.glossary)&&resource.glossary.length?'<h2>Glossary</h2><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>'+resource.glossary.map(g=>'<tr><td><strong>'+escapeHTML(g.term)+'</strong></td><td>'+escapeHTML(g.definition)+'</td></tr>').join('')+'</tbody></table>':'';
  return '<h1>'+escapeHTML(resource.title||val('title')||'Dual-coded resource')+'</h1>'+blockHTML+glossary;
 }
+const ENHANCED_VISUAL_SCHEMA={type:'object',additionalProperties:false,required:['enhancedVisual'],properties:{enhancedVisual:{type:'object',additionalProperties:false,required:['svg'],properties:{svg:{type:'string'}}}}};
+function enhancedVisualPrompt(block){
+ return `Create one polished, subject-specific educational SVG diagram for this content block.
+
+Subject: ${val('subject')}
+Key stage: ${val('keyStage')}
+Preferred style: ${val('visualStyle')}
+Heading: ${block.heading}
+Text: ${(Array.isArray(block.sentences)?block.sentences:[]).join(' ')}
+Relationship: ${block.visualType}
+Required labels: ${cleanVisualLabels(block.visualLabels).join(' | ')}
+Caption meaning: ${block.caption}
+
+Requirements:
+- Draw the actual subject structure, objects, components, spatial relationship or process described. Avoid a generic row of boxes unless that is genuinely the best model.
+- Use a 800 by 420 viewBox and a clear white or very pale background.
+- Use accurate, recognisable schematic forms with strong contrast and readable labels.
+- Keep labels brief and prevent text from touching or crossing shapes.
+- Use a restrained Hutton-compatible palette, with additional conventional subject colours where useful.
+- Return one self-contained SVG only in the schema property.
+- No HTML, scripts, CSS, external images, links, data URLs, foreignObject, defs, markers, filters, gradients or embedded fonts.
+- Use only svg, g, path, rect, circle, ellipse, line, polyline, polygon, text, tspan, title and desc elements.
+- Keep the SVG concise, ideally below 7,000 characters.`;
+}
+function sanitiseEnhancedSVG(raw){
+ const source=String(raw||'');const start=source.toLowerCase().indexOf('<svg');const end=source.toLowerCase().lastIndexOf('</svg>');if(start<0||end<start)throw new Error('No SVG returned');
+ const doc=new DOMParser().parseFromString(source.slice(start,end+6),'image/svg+xml');if(doc.querySelector('parsererror'))throw new Error('Invalid SVG returned');
+ const root=doc.documentElement;const tags=new Set(['svg','g','path','rect','circle','ellipse','line','polyline','polygon','text','tspan','title','desc']);const attrs=new Set(['viewbox','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','width','height','d','points','fill','stroke','stroke-width','stroke-linecap','stroke-linejoin','opacity','transform','font-size','font-weight','text-anchor','dominant-baseline','aria-label','role']);
+ [...root.querySelectorAll('*')].forEach(el=>{if(!tags.has(el.localName.toLowerCase())){el.remove();return}[...el.attributes].forEach(a=>{const n=a.name.toLowerCase(),v=a.value;if(!attrs.has(n)||/url\s*\(|javascript:|data:/i.test(v))el.removeAttribute(a.name)})});
+ [...root.attributes].forEach(a=>{const n=a.name.toLowerCase();if(!attrs.has(n)&&n!=='xmlns')root.removeAttribute(a.name)});root.setAttribute('viewBox',root.getAttribute('viewBox')||'0 0 800 420');root.setAttribute('role','img');root.removeAttribute('width');root.removeAttribute('height');
+ return new XMLSerializer().serializeToString(root);
+}
+async function requestEnhancedVisual(block){
+ const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),22000);let response;try{response=await fetch('/.netlify/functions/generate-resource',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:enhancedVisualPrompt(block),schema:ENHANCED_VISUAL_SCHEMA,schemaName:'teacher_ai_hub_dual_visual',fastMode:true,maxOutputTokens:2400,systemMessage:'You are an expert educational information designer and SVG illustrator. Draw one accurate, attractive and concise subject-specific diagram. Return only JSON matching the supplied schema.'})})}finally{clearTimeout(timeout)}
+ const text=await response.text();let data=null;try{data=JSON.parse(text)}catch(e){}if(!response.ok||!data||!data.ok)throw new Error((data&&data.error)||('Visual request returned '+response.status));return sanitiseEnhancedSVG(data.result.enhancedVisual.svg);
+}
+async function enhanceVisuals(resource){
+ if(val('visualQuality')!=='Enhanced diagrams (recommended)')return {upgraded:0,total:0};
+ const blocks=(Array.isArray(resource.blocks)?resource.blocks:[]).slice(0,6);const panels=[...document.querySelectorAll('#aiProduct .visual-panel')].slice(0,blocks.length);if(!blocks.length)return {upgraded:0,total:0};
+ let next=0,finished=0,upgraded=0;const progress=document.getElementById('formatStatus');
+ async function worker(){while(true){const index=next++;if(index>=blocks.length)return;try{const svg=await requestEnhancedVisual(blocks[index]);const old=panels[index]&&panels[index].querySelector('svg');if(old){old.outerHTML=svg;panels[index].classList.add('enhanced');upgraded++}}catch(e){console.warn('Enhanced visual '+(index+1)+' kept its reliable fallback:',e)}finished++;progress.innerHTML='<p class="warning">Enhancing diagrams: '+finished+' of '+blocks.length+' complete. The reliable diagrams remain wherever an enhancement is unavailable.</p>'}}
+ await Promise.all([worker(),worker()]);return {upgraded,total:blocks.length};
+}
 function initPremiumGeneration(){
  const btn=document.getElementById('generateResourceBtn');
  if(!btn||!window.HuttonPremiumAPI)return;
  btn.addEventListener('click',function(){
    if(!val('sourceText')){setStatus('Paste the text to rewrite first.','bad');document.getElementById('sourceText').focus();return;}
-   HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_dual_coding_v2',schema:DUAL_CODING_SCHEMA,buildPrompt:makeCompactPrompt,fastMode:true,maxOutputTokens:4000,onSuccess:async function(json){const resource=json.dualCodingResource||json;document.getElementById('aiProduct').innerHTML=renderDualCodingResource(resource);formatProduct();},systemMessage:'You are an expert UK secondary teacher and information designer. Convert only the supplied source text into concise dual-coded content blocks and a visual relationship plan. Do not write HTML or SVG. Return only JSON matching the supplied schema.',loadingMessage:'Creating dual-coded resource...',successMessage:'Dual-coded resource created successfully.',failurePrefix:'Automatic generation failed'});
+   HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_dual_coding_v2',schema:DUAL_CODING_SCHEMA,buildPrompt:makeCompactPrompt,fastMode:true,maxOutputTokens:4000,onSuccess:async function(json){const resource=json.dualCodingResource||json;document.getElementById('aiProduct').innerHTML=renderDualCodingResource(resource);formatProduct();const result=await enhanceVisuals(resource);if(result.total){formatProduct();document.getElementById('formatStatus').innerHTML='<p class="warning ok">Resource ready with '+result.upgraded+' enhanced diagram'+(result.upgraded===1?'':'s')+'. Reliable quick diagrams were retained for any remaining sections.</p>'}},systemMessage:'You are an expert UK secondary teacher and information designer. Convert only the supplied source text into concise dual-coded content blocks and a visual relationship plan. Do not write HTML or SVG. Return only JSON matching the supplied schema.',loadingMessage:'Creating dual-coded resource...',successMessage:'Dual-coded resource created successfully.',failurePrefix:'Automatic generation failed'});
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumGeneration);else initPremiumGeneration();
