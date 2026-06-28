@@ -48,6 +48,31 @@
     }
   }
 
+  function concealLegacyWorkflow() {
+    if (!document.getElementById("hutton-premium-legacy-style")) {
+      const style = document.createElement("style");
+      style.id = "hutton-premium-legacy-style";
+      style.textContent = "#promptBox,.hutton-premium-legacy{display:none!important}";
+      document.head.appendChild(style);
+    }
+
+    const promptBox = document.getElementById("promptBox");
+    if (promptBox) {
+      promptBox.classList.add("hutton-premium-legacy");
+      promptBox.setAttribute("aria-hidden", "true");
+    }
+
+    const response = document.getElementById("aiResponse");
+    if (response) {
+      const panel = response.closest("section.card, section, .card");
+      const containsGenerator = panel && panel.querySelector("#generateResourceBtn, #generateImageBtn");
+      if (panel && !containsGenerator && !/result|download|preview/i.test(panel.id || "")) {
+        panel.classList.add("hutton-premium-legacy");
+        panel.setAttribute("aria-hidden", "true");
+      }
+    }
+  }
+
   async function generateResource(options) {
     const button = byId(options.button);
     const statusEl = byId(options.status);
@@ -148,4 +173,10 @@
     setStatus,
     clearStatus
   };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", concealLegacyWorkflow);
+  } else {
+    concealLegacyWorkflow();
+  }
 })();
