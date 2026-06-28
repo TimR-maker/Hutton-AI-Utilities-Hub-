@@ -92,6 +92,7 @@
           prompt,
           schema: options.schema,
           schemaName: options.schemaName || "teacher_ai_hub_resource",
+          useWebSearch: options.useWebSearch === true,
           systemMessage: options.systemMessage || "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema."
         })
       };
@@ -99,7 +100,16 @@
       let responseText = "";
       let data = null;
       for (let attempt = 0; attempt < 3; attempt++) {
-        response = await fetch(endpoint, requestOptions);
+        try {
+          response = await fetch(endpoint, requestOptions);
+        } catch (networkError) {
+          if (attempt < 2) {
+            setStatus(statusEl, options.retryMessage || options.loadingMessage || "Still preparing your resource...", "warning");
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+            continue;
+          }
+          throw new Error("The generation service could not be reached after three attempts. Please check the connection and try again.");
+        }
         responseText = await response.text();
         try { data = JSON.parse(responseText); } catch (error) { data = null; }
         if (data) break;

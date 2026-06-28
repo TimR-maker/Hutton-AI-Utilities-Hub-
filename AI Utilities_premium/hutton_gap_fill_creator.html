@@ -175,7 +175,7 @@ function gapNormalise(data){
  d.passage=String(d.passage||d.text||d.gapText||d.gap_text||'');
  d.suggestedTime=String(d.suggestedTime||d.suggested_time||val('activityTime'));
  d.interactionStyle=String(d.interactionStyle||d.interaction_style||val('cardCount'));
- d.gaps=arr(d.gaps||d.answers).map((x,i)=>{x=x&&typeof x==='object'?x:{answer:String(x||'')};return{id:String(x.id||x.gapId||x.gap_id||'g'+(i+1)).replace(/[\[\]{}]/g,''),answer:String(x.answer||x.word||x.text||''),explanation:String(x.explanation||x.feedback||x.reason||'')}});
+ d.gaps=arr(d.gaps||d.answers).map((x,i)=>{x=x&&typeof x==='object'?x:{answer:String(x||'')};return{id:String(x.id||x.gapId||x.gap_id||'g'+(i+1)).replace(/[\[\]{}()\s]/g,'').toLowerCase(),answer:String(x.answer||x.word||x.text||''),explanation:String(x.explanation||x.feedback||x.reason||'')}});
  d.distractors=arr(d.distractors||d.extraWords||d.extra_words).map(String).filter(Boolean);
  d.debriefQuestions=arr(d.debriefQuestions||d.debrief_questions||d.questions).map(String);
  d.teacherNotes=String(d.teacherNotes||d.teacher_notes||'');
@@ -185,6 +185,7 @@ function gapNormalise(data){
  const replaceFirst=(re,replacement)=>{let done=false;d.passage=d.passage.replace(re,(m)=>{if(done)return m;done=true;return typeof replacement==='function'?replacement(m):replacement});return done};
  const ids=new Set();
  d.gaps.forEach((g,i)=>{if(!g.answer)throw new Error('Gap '+(i+1)+' has no answer.');if(ids.has(g.id))g.id='g'+(i+1);ids.add(g.id)});
+ d.gaps.forEach(g=>{const number=(g.id.match(/^g0*(\d+)$/i)||[])[1],token=number?'g\\s*0*'+number:escapeRegExp(g.id),variant=new RegExp('(?:\\[\\[\\s*'+token+'\\s*\\]\\]|\\{\\{\\s*'+token+'\\s*\\}\\}|\\[\\s*'+token+'\\s*\\]|\\{\\s*'+token+'\\s*\\}|\\(\\s*'+token+'\\s*\\))','gi');d.passage=d.passage.replace(variant,'['+g.id+']')});
  d.gaps.forEach((g,i)=>{
   if(hasMarker(g))return;
   const marker='['+g.id+']';
@@ -194,8 +195,8 @@ function gapNormalise(data){
   if(answer&&replaceFirst(new RegExp('(^|[^A-Za-z0-9])('+answer+')(?=$|[^A-Za-z0-9])','i'),(m)=>m.replace(new RegExp(answer,'i'),marker)))return;
  });
  d.gaps.forEach((g,i)=>{
-  const patterns=[new RegExp('\\[\\s*'+escapeRegExp(g.id)+'\\s*\\]','gi'),new RegExp('\\{\\{\\s*'+escapeRegExp(g.id)+'\\s*\\}\\}','gi'),new RegExp('\\[\\[\\s*'+escapeRegExp(g.id)+'\\s*\\]\\]','gi')];
-  let count=0;patterns.forEach(re=>{const m=d.passage.match(re);if(m)count+=m.length});
+  const markerPattern=new RegExp('\\[\\s*'+escapeRegExp(g.id)+'\\s*\\]','gi');
+  const count=(d.passage.match(markerPattern)||[]).length;
   if(count!==1)throw new Error('The passage could not identify exactly one place for '+g.id+'. Ask the AI to return the same gap-fill again using [g1], [g2] markers in the passage.');
  });
  return d

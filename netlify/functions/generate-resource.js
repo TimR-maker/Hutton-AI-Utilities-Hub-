@@ -52,6 +52,7 @@ exports.handler = async function(event) {
     const prompt = String(requestBody.prompt || "").trim();
     const schema = requestBody.schema;
     const schemaName = safeSchemaName(requestBody.schemaName);
+    const useWebSearch = requestBody.useWebSearch === true;
     const systemMessage = String(
       requestBody.systemMessage ||
       "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema."
@@ -65,27 +66,32 @@ exports.handler = async function(event) {
       return jsonResponse(400, { ok: false, error: "Missing JSON schema." });
     }
 
+    const responseRequest = {
+      model: useWebSearch
+        ? (process.env.OPENAI_SEARCH_MODEL || "gpt-5.4-mini")
+        : (process.env.OPENAI_MODEL || "gpt-4.1-mini"),
+      input: [
+        { role: "system", content: systemMessage },
+        { role: "user", content: prompt }
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: schemaName,
+          strict: true,
+          schema
+        }
+      }
+    };
+    if (useWebSearch) responseRequest.tools = [{ type: "web_search" }];
+
     const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-        input: [
-          { role: "system", content: systemMessage },
-          { role: "user", content: prompt }
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: schemaName,
-            strict: true,
-            schema
-          }
-        }
-      })
+      body: JSON.stringify(responseRequest)
     });
 
     const data = await openaiResponse.json().catch(() => null);

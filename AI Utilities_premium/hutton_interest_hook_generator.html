@@ -143,8 +143,20 @@ const INTEREST_HOOK_SCHEMA = {
         demand: { type: "string" },
         readingAge: { type: "string" },
         hookType: { type: "string" },
+        slideFormat: { type: "string" },
         hookText: { type: "string" },
-        supportingDetails: { type: "array", items: { type: "string" } },
+        supportingDetails: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["label", "detail"],
+            properties: {
+              label: { type: "string" },
+              detail: { type: "string" }
+            }
+          }
+        },
         followUpPrompts: { type: "array", items: { type: "string" } },
         teacherNote: { type: "string" }
       }
