@@ -166,9 +166,7 @@ function applySavedLessonContext(){
  }
  setSelectIfPossible('subject',ctx.subject);
  setSelectIfPossible('keyStage',ctx.keyStage);
- setInputIfPossible('title',ctx.lessonFocus||ctx.topic,false);
- setInputIfPossible('guidance',ctx.notes,true);
- setStatus('Saved lesson context applied. Check the fields, then generate the prompt.','ok');
+ setStatus('Saved subject and key stage applied. The pasted text will remain the sole source for the resource.','ok');
 }
 
 function makePrompt(){
@@ -185,6 +183,13 @@ function makePrompt(){
  const prompt=`Rewrite this in simpler language with shorter sentences, retaining ${ks} level subject understanding.
 
 Create visual explanations that reduce pupils' cognitive load and make the subject relationships easier to understand.
+
+NON-NEGOTIABLE SOURCE RULE:
+- Dual-code only the text pasted in the Text to rewrite field below.
+- Treat that pasted text as the sole source of facts, sequence, examples and emphasis.
+- Subject, key stage, title and teacher guidance are presentation context only. Do not generate lesson content from them.
+- Do not replace, reinterpret or expand the pasted passage into a general resource about the saved lesson topic.
+- Every written point and visual must be traceable to the pasted text. If the context conflicts with the pasted text, follow the pasted text.
 
 Important:
 - Generate the visual icons or diagrams directly in the chat response.
@@ -225,6 +230,8 @@ Text to rewrite or uploaded document:
 """
 ${source}
 """
+
+Now work from the pasted text above, not from the lesson context metadata.
 
 Please produce:
 1. A clear title.
