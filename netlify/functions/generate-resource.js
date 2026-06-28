@@ -86,6 +86,9 @@ exports.handler = async function(event) {
       }
     };
     if (useWebSearch) responseRequest.tools = [{ type: "web_search" }];
+    if (Number.isFinite(Number(requestBody.maxOutputTokens))) {
+      responseRequest.max_output_tokens = Math.max(500, Math.min(8000, Math.round(Number(requestBody.maxOutputTokens))));
+    }
 
     const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",

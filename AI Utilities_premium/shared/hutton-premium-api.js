@@ -119,6 +119,7 @@
           schemaName: options.schemaName || "teacher_ai_hub_resource",
           useWebSearch: options.useWebSearch === true,
           fastMode: options.fastMode === true,
+          maxOutputTokens: options.maxOutputTokens,
           systemMessage: options.systemMessage || "You generate classroom-ready UK secondary school teaching resources. Return only JSON that matches the supplied schema."
         })
       };

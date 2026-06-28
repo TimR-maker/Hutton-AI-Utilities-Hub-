@@ -530,13 +530,69 @@ function downloadWord(){
 
 document.getElementById('aiProduct').addEventListener('paste',handleProductPaste);
 
-const DUAL_CODING_SCHEMA={type:'object',additionalProperties:false,required:['dualCodingResource'],properties:{dualCodingResource:{type:'object',additionalProperties:false,required:['html'],properties:{html:{type:'string'}}}}};
+function makeCompactPrompt(){
+ const source=val('sourceText');
+ const requested=parseInt(val('visualCount'),10)||15;
+ const blockCount=Math.min(Math.max(requested,3),8);
+ return `Create a dual-coded version of the pasted text below for ${val('keyStage')} ${val('subject')} pupils.
+
+SOURCE RULES
+- The pasted text is the sole source of content. Do not generate a general lesson resource from the title or lesson context.
+- Preserve its facts, sequence, examples and emphasis. Do not add outside facts.
+- Simplify to: ${val('simplificationLevel')}. Aim for ${val('sentenceLimit')}.
+- Use British English.
+
+OUTPUT RULES
+- Return exactly ${blockCount} concise content blocks unless the source is too short, in which case use at least 3.
+- Each block needs a short heading and 1 to 3 short sentences.
+- Choose the visual relationship that genuinely explains that block: sequence, cycle, comparison, cause-effect, hierarchy, labelled-system, scale or symbol-row.
+- Supply 2 to 5 very short visual labels, normally no more than 3 words each. Labels must come from the pasted text.
+- The browser draws the diagrams. Do not return HTML, SVG, markdown, image prompts or visual descriptions.
+- Give a concise caption explaining what the relationship shows.
+- Include only genuinely useful glossary terms from the pasted text.
+- Teacher guidance may affect clarity and emphasis but must never introduce different lesson content: ${val('guidance')||'No additional guidance.'}
+
+PASTED TEXT
+"""
+${source}
+"""
+
+Before returning, silently check that every sentence and every visual label is traceable to the pasted text.`;
+}
+const DUAL_CODING_SCHEMA={type:'object',additionalProperties:false,required:['dualCodingResource'],properties:{dualCodingResource:{type:'object',additionalProperties:false,required:['title','blocks','glossary'],properties:{title:{type:'string'},blocks:{type:'array',items:{type:'object',additionalProperties:false,required:['heading','sentences','visualType','visualLabels','caption'],properties:{heading:{type:'string'},sentences:{type:'array',items:{type:'string'}},visualType:{type:'string',enum:['sequence','cycle','comparison','cause-effect','hierarchy','labelled-system','scale','symbol-row']},visualLabels:{type:'array',items:{type:'string'}},caption:{type:'string'}}}},glossary:{type:'array',items:{type:'object',additionalProperties:false,required:['term','definition'],properties:{term:{type:'string'},definition:{type:'string'}}}}}}}};
+function cleanVisualLabels(labels){return (Array.isArray(labels)?labels:[]).map(x=>String(x||'').trim()).filter(Boolean).slice(0,5)}
+function visualText(label,x,y,size){return '<text x="'+x+'" y="'+y+'" text-anchor="middle" dominant-baseline="middle" font-size="'+(size||17)+'" font-weight="700" fill="#0b2348">'+escapeHTML(String(label||'').slice(0,24))+'</text>'}
+function localVisual(type,inputLabels){
+ const labels=cleanVisualLabels(inputLabels);while(labels.length<2)labels.push(labels.length?'Key link':'Key idea');
+ const box=(x,y,w,h,label,fill)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="12" fill="'+(fill||'#eef6ff')+'" stroke="#315a98" stroke-width="2"/>'+visualText(label,x+w/2,y+h/2,15);
+ let body='';
+ if(type==='comparison'){
+   body=box(35,55,235,105,labels[0],'#eef6ff')+box(330,55,235,105,labels[1],'#fff7df')+visualText('COMPARE',300,28,14);
+ }else if(type==='hierarchy'){
+   body=box(205,18,190,62,labels[0],'#e8f3ff');const lower=labels.slice(1,4),w=160,g=25,start=(600-(lower.length*w+(lower.length-1)*g))/2;lower.forEach((l,i)=>{const x=start+i*(w+g);body+='<line x1="300" y1="80" x2="'+(x+w/2)+'" y2="128" stroke="#607089" stroke-width="3"/>'+box(x,128,w,64,l,'#f7fbff')});
+ }else if(type==='labelled-system'){
+   const outer=labels.slice(1,5),pts=[[90,35],[390,35],[90,145],[390,145]];body='<circle cx="300" cy="110" r="58" fill="#e8f3ff" stroke="#315a98" stroke-width="3"/>'+visualText(labels[0],300,110,16);outer.forEach((l,i)=>{const p=pts[i];const cx=p[0]+60,cy=p[1]+25;body+='<line x1="300" y1="110" x2="'+cx+'" y2="'+cy+'" stroke="#607089" stroke-width="2"/>'+box(p[0],p[1],120,50,l,'#fff')});
+ }else if(type==='scale'){
+   body='<line x1="65" y1="110" x2="535" y2="110" stroke="#0b2348" stroke-width="6"/>';labels.forEach((l,i)=>{const x=65+(470*i/(labels.length-1));body+='<circle cx="'+x+'" cy="110" r="10" fill="#f0c928" stroke="#0b2348" stroke-width="2"/>'+visualText(l,x,i%2?155:62,14)});
+ }else if(type==='cycle'){
+   const use=labels.slice(0,4),pts=[[300,42],[470,110],[300,178],[130,110]];use.forEach((l,i)=>{const p=pts[i],n=pts[(i+1)%use.length];body+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+n[0]+'" y2="'+n[1]+'" stroke="#607089" stroke-width="4"/>';});use.forEach((l,i)=>{const p=pts[i];body+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="44" fill="#eef6ff" stroke="#315a98" stroke-width="2"/>'+visualText(l,p[0],p[1],14)});
+ }else{
+   const use=labels.slice(0,4),gap=18,w=(520-gap*(use.length-1))/use.length;use.forEach((l,i)=>{const x=40+i*(w+gap);body+=box(x,72,w,76,l,i%2?'#fff7df':'#eef6ff');if(i<use.length-1)body+=visualText('→',x+w+gap/2,110,24)});
+ }
+ return '<svg viewBox="0 0 600 220" role="img" aria-label="'+escapeHTML(type.replace('-',' '))+' diagram">'+body+'</svg>';
+}
+function renderDualCodingResource(resource){
+ const blocks=Array.isArray(resource.blocks)?resource.blocks:[];
+ const blockHTML=blocks.map(b=>'<section class="dual-block"><div class="text-panel"><h2>'+escapeHTML(b.heading)+'</h2>'+(Array.isArray(b.sentences)?b.sentences:[]).map(s=>'<p>'+escapeHTML(s)+'</p>').join('')+'</div><div class="visual-panel">'+localVisual(b.visualType,b.visualLabels)+'<p class="visual-caption">'+escapeHTML(b.caption)+'</p></div></section>').join('');
+ const glossary=Array.isArray(resource.glossary)&&resource.glossary.length?'<h2>Glossary</h2><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>'+resource.glossary.map(g=>'<tr><td><strong>'+escapeHTML(g.term)+'</strong></td><td>'+escapeHTML(g.definition)+'</td></tr>').join('')+'</tbody></table>':'';
+ return '<h1>'+escapeHTML(resource.title||val('title')||'Dual-coded resource')+'</h1>'+blockHTML+glossary;
+}
 function initPremiumGeneration(){
  const btn=document.getElementById('generateResourceBtn');
  if(!btn||!window.HuttonPremiumAPI)return;
  btn.addEventListener('click',function(){
    if(!val('sourceText')){setStatus('Paste the text to rewrite first.','bad');document.getElementById('sourceText').focus();return;}
-   HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_dual_coding',schema:DUAL_CODING_SCHEMA,buildPrompt:makePrompt,fastMode:true,onSuccess:async function(json){const resource=json.dualCodingResource||json;document.getElementById('aiProduct').innerHTML=resource.html||'';formatProduct();},systemMessage:'You are an expert UK secondary teacher and information designer. Create accurate dual-coded resources in which every visual explains a real subject relationship. Use compact, varied and labelled diagrams rather than generic emoji or decorative icon cards. Work efficiently: keep SVG markup simple and concise. Return only JSON matching the supplied schema. The html value must be a safe HTML fragment with no scripts or styles.',loadingMessage:'Creating dual-coded resource...',successMessage:'Dual-coded resource created successfully.',failurePrefix:'Automatic generation failed'});
+   HuttonPremiumAPI.generateResource({button:'generateResourceBtn',status:'status',schemaName:'teacher_ai_hub_dual_coding_v2',schema:DUAL_CODING_SCHEMA,buildPrompt:makeCompactPrompt,fastMode:true,maxOutputTokens:4000,onSuccess:async function(json){const resource=json.dualCodingResource||json;document.getElementById('aiProduct').innerHTML=renderDualCodingResource(resource);formatProduct();},systemMessage:'You are an expert UK secondary teacher and information designer. Convert only the supplied source text into concise dual-coded content blocks and a visual relationship plan. Do not write HTML or SVG. Return only JSON matching the supplied schema.',loadingMessage:'Creating dual-coded resource...',successMessage:'Dual-coded resource created successfully.',failurePrefix:'Automatic generation failed'});
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumGeneration);else initPremiumGeneration();
