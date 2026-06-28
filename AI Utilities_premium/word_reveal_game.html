@@ -309,6 +309,7 @@ background:#0b2348;color:#fff;cursor:pointer}
 <mso:_SharedFileIndex msdt:dt="string"></mso:_SharedFileIndex>
 </mso:CustomDocumentProperties>
 </xml><![endif]-->
+<script src="shared/hutton-premium-api.js"></script>
 </head>
 <body>
 <div id="app">
@@ -344,9 +345,9 @@ background:#0b2348;color:#fff;cursor:pointer}
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn primary" onclick="createVocabularyPrompt()"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Create vocabulary prompt</button>
+        <button class="btn primary" id="generateResourceBtn" type="button"><img class="brand-icon" src="hutton_ai_hub_icon.svg" alt="">Generate vocabulary list</button>
       </div>
-      <p class="small-text">Use this when you want AI to suggest a focused list for the game. You can still edit the words manually before starting.</p>
+      <p class="small-text" id="vocab-generation-status">The generated list will appear below and can be edited before starting.</p>
     </div>
     <div class="card" id="vocab-prompt-card">
       <label for="vocab-prompt-output">Prompt to copy into ChatGPT, Copilot or Claude:</label>
@@ -919,5 +920,11 @@ Licensed to Hutton Grammar School for internal educational use only.
 })();
 </script>
 
+<script>
+const WORD_REVEAL_SCHEMA={type:'object',additionalProperties:false,required:['vocabulary'],properties:{vocabulary:{type:'array',items:{type:'string'}}}};
+function wordRevealPrompt(){const topic=document.getElementById('topic-input').value.trim(),count=document.getElementById('word-count-select').value,level=document.getElementById('vocab-level-select').value;return `Create exactly ${count} distinct vocabulary items for a classroom word reveal game.\n\nTopic: ${topic}\nVocabulary level: ${level}\n\nUse accurate, subject-specific words or essential short phrases. Select a useful range rather than near-duplicates. Keep every item concise enough for a classroom whiteboard. Do not include definitions or clues. Return only the structured vocabulary array.`}
+function initPremiumWordReveal(){const btn=document.getElementById('generateResourceBtn');if(!btn||!window.HuttonPremiumAPI)return;btn.addEventListener('click',function(){HuttonPremiumAPI.generateResource({button:btn,status:'vocab-generation-status',schemaName:'teacher_ai_hub_word_reveal',schema:WORD_REVEAL_SCHEMA,validate:function(){return document.getElementById('topic-input').value.trim()?'':'Enter a topic before generating the vocabulary list.'},buildPrompt:wordRevealPrompt,onSuccess:async function(json){const count=parseInt(document.getElementById('word-count-select').value,10),seen=new Set(),items=(Array.isArray(json.vocabulary)?json.vocabulary:[]).map(x=>String(x||'').trim()).filter(x=>x&&!seen.has(x.toLowerCase())&&seen.add(x.toLowerCase())).slice(0,count);if(!items.length)throw new Error('No vocabulary items were returned.');document.getElementById('word-input').value=items.join('\n')},systemMessage:'Generate an accurate, concise vocabulary set for a UK secondary classroom word reveal game. Return only JSON matching the schema.',loadingMessage:'Generating vocabulary list...',successMessage:'Vocabulary list ready. Edit it if needed, then start the game.',failurePrefix:'Automatic generation failed'})})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPremiumWordReveal);else initPremiumWordReveal();
+</script>
 </body>
 </html>
