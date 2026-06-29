@@ -3,24 +3,24 @@
 
 const SPEAKERS = {
   Sarah: {
-    voice: "marin",
-    direction: "Speak with a natural Northern England accent from Lancashire. You are an experienced English teacher and SENDCO. Warm, calm and reassuring with a friendly smile in your voice. Speak conversationally as though chatting with trusted colleagues in a school staff room. Use authentic Northern British pronunciation and intonation. Never sound American, theatrical or exaggerated."
+    voice: "coral",
+    direction: "Warm, calm and reassuring, with attentive phrasing and gentle confidence."
   },
   Mark: {
-    voice: "ash",
-    direction: "Speak with a mature Lancashire accent. You are a highly experienced history teacher and former head of department. Calm, reflective and quietly humorous. Steady, confident and unhurried. Use natural Northern English pronunciation throughout. Never drift into American pronunciation."
+    voice: "fable",
+    direction: "Use natural British English. Sound measured and experienced, with dry warmth and unhurried authority."
   },
   Rachel: {
-    voice: "coral",
-    direction: "Speak with a confident Northern England accent. You are an enthusiastic assessment lead. Clear, articulate and energetic without rushing. Sound intelligent and curious rather than dramatic. Use authentic Northern British pronunciation throughout and never American."
+    voice: "marin",
+    direction: "Clear, precise and curious, with purposeful energy, strong projection and a slightly firmer recording level."
   },
   Imran: {
     voice: "echo",
-    direction: "Speak with a friendly Manchester or Lancashire accent. Warm, approachable and optimistic. Natural conversational rhythm as though talking in a real school staff room. Use British pronunciation throughout. Never sound like an American presenter."
+    direction: "Friendly, lively and optimistic, with conversational energy that remains professional."
   },
   Aisha: {
     voice: "nova",
-    direction: "Speak with a clear Northern English female voice. Professional, organised and thoughtful. Confident without sounding formal. Natural Lancashire pronunciation with relaxed pacing. Never use American pronunciation or exaggerated regional speech."
+    direction: "Use a clearly female voice. Sound composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
   }
 };
 
