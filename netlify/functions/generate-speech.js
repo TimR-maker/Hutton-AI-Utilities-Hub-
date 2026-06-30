@@ -4,31 +4,25 @@
 const SPEAKERS = {
   Sarah: {
     voiceId: "bcbCvQCwSa1wTtpvM2WS",
-    prefix: "Speak naturally as Sarah, an experienced Lancashire SENDCO and English teacher. Warm, calm and reassuring. You are talking informally to trusted colleagues in a school staff room, not reading a script.",
     settings: { stability: 0.56, similarity_boost: 0.85, style: 0.10, use_speaker_boost: true }
   },
   Mark: {
     voiceId: "TockUyWWZDWGrk7QuzTF",
-    prefix: "Speak naturally as Mark, a highly experienced Lancashire history teacher and former head of department. Calm, mature, dryly warm and unhurried. Sound thoughtful rather than performative.",
-    settings: { stability: 0.68, similarity_boost: 0.86, style: 0.04, use_speaker_boost: true }
+    settings: { stability: 0.82, similarity_boost: 0.78, style: 0.00, use_speaker_boost: true }
   },
   Rachel: {
     voiceId: "b6T2IrWoTx7ZIb3BHJSg",
-    prefix: "Speak naturally as Rachel, a clear and energetic Northern English assessment lead. Sound curious, precise and engaged. Keep it conversational, not like a presenter.",
-    settings: { stability: 0.42, similarity_boost: 0.82, style: 0.18, use_speaker_boost: true }
+    settings: { stability: 0.48, similarity_boost: 0.88, style: 0.10, use_speaker_boost: true }
   },
   Imran: {
     voiceId: "8KgifH3usc0tJtr7QzP4",
-    prefix: "Speak naturally as Imran, a friendly Manchester or Lancashire teacher. Warm, lively and optimistic. Use a relaxed staff-room rhythm with natural emphasis.",
     settings: { stability: 0.40, similarity_boost: 0.82, style: 0.22, use_speaker_boost: true }
   },
   Aisha: {
     voiceId: "ZF6FPAbjXT4488VcRRnw",
-    prefix: "Speak naturally as Aisha, a composed Northern English curriculum lead. Organised, professional and pragmatic. Clear and thoughtful without sounding formal.",
     settings: { stability: 0.58, similarity_boost: 0.85, style: 0.08, use_speaker_boost: true }
   }
 };
-
 function jsonResponse(statusCode, error) {
   return {
     statusCode,
@@ -40,9 +34,6 @@ function jsonResponse(statusCode, error) {
   };
 }
 
-function prepareSpeechText(profile, text) {
-  return `${profile.prefix}\n\nNow say this line naturally:\n${text}`;
-}
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") return jsonResponse(405, "Method not allowed.");
@@ -66,7 +57,7 @@ exports.handler = async function (event) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          text: prepareSpeechText(profile, text),
+          text,
           model_id: process.env.ELEVENLABS_TTS_MODEL || "eleven_multilingual_v2",
           voice_settings: profile.settings
         })
