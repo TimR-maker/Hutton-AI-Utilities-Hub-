@@ -1,72 +1,91 @@
 // Teacher AI Hub Premium voice service.
-// Uses distinct, high-quality voices for the five colleagues.
+// Uses ElevenLabs voices for the colleagues.
 
 const SPEAKERS = {
   Sarah: {
-    voice: "coral",
-    direction: "Warm, calm and reassuring, with attentive phrasing and gentle confidence."
+    voiceId: "bcbCvQCwSa1wTtpvM2WS"
   },
   Mark: {
-    voice: "fable",
-    direction: "Use natural British English. Sound measured and experienced, with dry warmth and unhurried authority."
+    voiceId: "TockUyWWZDWGrk7QuzTF"
   },
   Rachel: {
-    voice: "marin",
-    direction: "Clear, precise and curious, with purposeful energy, strong projection and a slightly firmer recording level."
+    voiceId: "b6T2IrWoTx7ZIb3BHJSg"
   },
   Imran: {
-    voice: "echo",
-    direction: "Friendly, lively and optimistic, with conversational energy that remains professional."
+    voiceId: "8KgifH3usc0tJtr7QzP4"
   },
   Aisha: {
-    voice: "nova",
-    direction: "Use a clearly female voice. Sound composed, organised and pragmatic, speaking clearly with concise, assured emphasis."
+    voiceId: "ZF6FPAbjXT4488VcRRnw"
   }
 };
 
 function jsonResponse(statusCode, error) {
   return {
     statusCode,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    },
     body: JSON.stringify({ ok: false, error })
   };
 }
 
 exports.handler = async function (event) {
-  if (event.httpMethod !== "POST") return jsonResponse(405, "Method not allowed.");
-  if (!process.env.OPENAI_API_KEY) return jsonResponse(500, "Voice service is not configured.");
+
+  if (event.httpMethod !== "POST")
+    return jsonResponse(405, "Method not allowed.");
+
+  if (!process.env.ELEVENLABS_API_KEY)
+    return jsonResponse(500, "Voice service is not configured.");
 
   try {
+
     const body = JSON.parse(event.body || "{}");
     const speaker = String(body.speaker || "");
     const text = String(body.text || "").trim();
+
     const profile = SPEAKERS[speaker];
 
-    if (!profile) return jsonResponse(400, "Unknown colleague voice.");
-    if (!text || text.length > 1800) return jsonResponse(400, "Speech text is missing or too long.");
+    if (!profile)
+      return jsonResponse(400, "Unknown colleague voice.");
 
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts",
-        voice: profile.voice,
-        input: text,
-        speed: 1.06,
-        instructions: profile.direction,
-        response_format: "mp3"
-      })
-    });
+    if (!text || text.length > 1800)
+      return jsonResponse(400, "Speech text is missing or too long.");
+
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${profile.voiceId}?output_format=mp3_44100_128`,
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": process.env.ELEVENLABS_API_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: {
+            stability: 0.45,
+            similarity_boost: 0.80,
+            style: 0.15,
+            use_speaker_boost: true
+          }
+        })
+      }
+    );
 
     if (!response.ok) {
       const data = await response.json().catch(() => null);
-      return jsonResponse(response.status, data?.error?.message || "Speech generation failed.");
+
+      return jsonResponse(
+        response.status,
+        data?.detail?.message ||
+        data?.message ||
+        "Speech generation failed."
+      );
     }
 
     const audio = Buffer.from(await response.arrayBuffer()).toString("base64");
+
     return {
       statusCode: 200,
       isBase64Encoded: true,
@@ -76,7 +95,14 @@ exports.handler = async function (event) {
       },
       body: audio
     };
+
   } catch (error) {
-    return jsonResponse(500, error.message || "Unexpected voice service error.");
+
+    return jsonResponse(
+      500,
+      error.message || "Unexpected voice service error."
+    );
+
   }
+
 };
